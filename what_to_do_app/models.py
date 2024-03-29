@@ -16,16 +16,31 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
+class EmotionCategory(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class EmotionType(models.Model):
+    POSITIVE = 1
+    NEGATIVE = -1
+    WEIGHT_CHOICES = (
+        (POSITIVE, 'Positive'),
+        (NEGATIVE, 'Negative'),
+    )
+    name = models.CharField(max_length=255)
+    weight = models.IntegerField(choices=WEIGHT_CHOICES)
+
+    def __str__(self):
+        return self.name
+
 
 class Emotion(models.Model):
-    CATEGORY_CHOICES = (
-        (-1, 'Negative'),
-        (0, 'Neutral'),
-        (1, 'Positive'),
-    )
-
     name = models.CharField(max_length=255)
-    category = models.IntegerField(choices=CATEGORY_CHOICES)
+    category = models.ForeignKey(EmotionCategory, related_name='emotions', on_delete=models.CASCADE)
+    emotion_type = models.ForeignKey(EmotionType, related_name='emotions', on_delete=models.CASCADE, default=1)
 
     def __str__(self):
         return self.name
