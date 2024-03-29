@@ -50,9 +50,6 @@ class Activity(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    activity_date = models.DateField(auto_now_add=True)
-    activity_time = models.TimeField()
-    duration = models.DurationField(blank=True, null=True)
     user_emotions = models.ManyToManyField(Emotion, through='UserActivityEmotion', related_name='user_activities')
 
     def __str__(self):
@@ -80,6 +77,9 @@ class ActivityEvent(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
+    activity_date = models.DateField(null=True, blank=True)
+    activity_time = models.TimeField(null=True, blank=True)
+    duration = models.DurationField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
 
     def __str__(self):

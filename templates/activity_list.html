@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Activities{% endblock %}
+
+{% block content %}
+
+    {% for activity in object_list %}
+      <p>
+        {{ activity.name }}
+        <a href="{% url 'activity_update' activity.id %}">Edit</a>
+        <a href="{% url 'activity_delete' activity.id %}">Delete</a>
+      </p>
+    {% endfor %}
+
+    <a href="{% url 'activity_create' %}">Add New Activity</a>
+
+{% endblock content %}
