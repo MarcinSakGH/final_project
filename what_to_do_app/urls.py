@@ -12,4 +12,5 @@ urlpatterns = [
     path('activities/new/', ActivityCreateView.as_view(), name='activity_create'),
     path('activities/edit/<int:pk>', ActivityUpdateView.as_view(), name='activity_update'),
     path('activities/delete/<int:pk>', ActivityDeleteView.as_view(), name='activity_delete'),
+
 ]

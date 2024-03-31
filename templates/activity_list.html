@@ -10,7 +10,9 @@
         <a href="{% url 'activity_update' activity.id %}">Edit</a>
         <a href="{% url 'activity_delete' activity.id %}">Delete</a>
       <br>
+          {% if activity.description %}
       - {{ activity.description }}
+      {% endif %}
       </p>
     {% endfor %}
 

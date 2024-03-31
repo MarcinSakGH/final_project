@@ -7,4 +7,7 @@
     {{ form.as_p }}
     <button type="submit">Update</button>
   </form>
+    <br>
+    If you want to change your password, use
+    <a href="{% url 'password_change' %}">Password change</a>
 {% endblock %}
