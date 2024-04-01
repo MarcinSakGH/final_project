@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+
+{% block title %}Current Day{% endblock %}
+
+{% block content %}
+
+    <h1>{{ current_day_of_week }} - {{ today }}</h1>
+
+    <h2>Today's activities:</h2>
+    {% if activities %}
+        <ul>{% for activity in activities %}
+        <li>{{ activity.activity }} - {{ activity.comment }} - {{ activity.duration }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Add activity to the current day</button>
+    </form>
+
+{% endblock content %}

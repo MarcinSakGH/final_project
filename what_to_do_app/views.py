@@ -1,12 +1,13 @@
 from django.shortcuts import render
+from django.utils import timezone
+from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, View, ListView, DeleteView, UpdateView
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-import datetime
-
-from .forms import CustomUserCreationForm, CustomUserChangeForm, ActivityForm
-from .models import Activity
+from datetime import datetime, date
+from .forms import CustomUserCreationForm, CustomUserChangeForm, ActivityForm, ActivityEventForm
+from .models import Activity, ActivityEvent
 
 
 # Create your views here.
@@ -54,6 +55,19 @@ class ActivityDeleteView(LoginRequiredMixin, DeleteView):
 
 class DayView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        current_day_of_week = datetime.date.today().weekday()
-        ctx = {'current_day_of_week': current_day_of_week}
+        form = ActivityEventForm()
+        activities = ActivityEvent.objects.filter(user=self.request.user, activity_date=timezone.now()).order_by(
+            '-activity_date')
+        today = date.today()
+        current_day_of_week = today.strftime("%A")
+        ctx = {"form": form, 'current_day_of_week': current_day_of_week, "activities": activities,
+               'today': today}
         return render(request, 'currentDayView.html', context=ctx)
+    def post(self, request, *args, **kwargs):
+        current_day_of_week = date.today().weekday()
+        form = ActivityEventForm(request.POST)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.user = request.user
+            activity.save()
+            return HttpResponseRedirect(reverse_lazy('current_day'))
