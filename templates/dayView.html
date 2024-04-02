@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
-
-{% block title %}Current Day{% endblock %}
+{% block title %}Selected Day{% endblock %}
 
 {% block content %}
 
@@ -12,7 +11,7 @@
     </div>
     
 
-    <h2>Today's activities:</h2>
+    <h2>Selected day's activities:</h2>
 
     {% if activities %}
    <table>
@@ -35,15 +34,15 @@
     </tbody>
 </table>
         {% else %}
-        <p>No activities added for today.</p>
+        <p>No activities added for selected day.</p>
     {% endif %}
 
-    <h2>Add new activity to the current day:</h2>
+    <h2>Add new activity to the selected day:</h2>
 
     <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Add activity to the current day</button>
+    <button type="submit">Add activity to the selected day</button>
     </form> <br>
 
     <a href="{% url 'activity_create' %}" class="btn">Or create a new activity</a>

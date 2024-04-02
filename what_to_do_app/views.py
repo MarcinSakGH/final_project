@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
@@ -41,6 +41,8 @@ class ActivityCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 class ActivityUpdateView(LoginRequiredMixin, UpdateView):
+
+
     model = Activity
     form_class = ActivityForm
     template_name = 'activity_form.html'
@@ -53,28 +55,55 @@ class ActivityDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('activity_list')
 
 
+
+
 class DayView(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
+    def get(self, request, date=None):
+        if date:
+            current_date = datetime.strptime(date, '%Y-%m-%d').date()
+        else:
+            current_date = datetime.now().date()
         form = ActivityEventForm()
-        activities = ActivityEvent.objects.filter(user=self.request.user, activity_date=timezone.now()).order_by(
-            '-activity_date')
-        today = date.today()
-        current_day_of_week = today.strftime("%A")
-        ctx = {"form": form, 'current_day_of_week': current_day_of_week, "activities": activities,
-               'today': today}
-        return render(request, 'currentDayView.html', context=ctx)
-    def post(self, request, *args, **kwargs):
+        previous_day = current_date - timedelta(days=1)
+        next_day = current_date + timedelta(days=1)
+        activities = ActivityEvent.objects.filter(
+            user=self.request.user,
+            activity_date=current_date
+        ).order_by('-activity_date')
+        current_day_of_week = current_date.strftime("%A")
+        ctx = {
+            "form": form,
+            "current_day_of_week": current_day_of_week,
+            "activities": activities,
+            "today": current_date,
+            'previous_day': previous_day,
+            "next_day": next_day
+        }
+        return render(request, 'dayView.html', context=ctx)
+
+    def post(self, request, date, *args, **kwargs):
+        if date:
+            current_date = datetime.strptime(date, '%Y-%m-%d').date()
+        else:
+            current_date = datetime.now().date()
         form = ActivityEventForm(request.POST)
         if form.is_valid():
             duration_hours = form.cleaned_data.get('duration_hours', 0)
             duration_minutes = int(form.cleaned_data.get('duration_minutes', 0))
-            duration = timedelta(hours=duration_hours, minutes=duration_minutes)
+
+            if duration_hours is None and duration_minutes is None:
+                duration = None
+            else:
+                duration_hours = duration_hours or 0
+                duration_minutes = int(duration_minutes or 0)
+                duration = timedelta(hours=duration_hours, minutes=duration_minutes)
+
             activity = form.save(commit=False)
             activity.duration = duration
             activity.user = request.user
+            activity.activity_date = datetime.strptime(date, '%Y-%m-%d').date()
             activity.save()
-            return HttpResponseRedirect(reverse_lazy('current_day'))
-
+            return redirect('day', date=current_date.strftime("%Y-%m-%d"))
 
 def add_activity(request):
     if request.method == 'POST':
@@ -91,4 +120,7 @@ def add_activity(request):
 class ActivityEventDeleteView(DeleteView):
     model = ActivityEvent
     template_name = 'activityevent_confirm_delete.html'
-    success_url = reverse_lazy('current_day')
+
+    def get_success_url(self):
+        activity_date = self.object.activity_date
+        return reverse('day', kwargs={'date': activity_date.strftime("%Y-%m-%d")})

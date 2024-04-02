@@ -46,7 +46,15 @@ class ActivityEventForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        hours = cleaned_data.get('duration_hours') or 0
-        minutes = int(cleaned_data.get('duration_minutes') or 0)
-        cleaned_data['duration'] = timedelta(hours=hours, minutes=minutes)
+
+        hours = cleaned_data.get('duration_hours')
+        minutes = cleaned_data.get('duration_minutes')
+
+        if hours is None and minutes is None:
+            cleaned_data['duration'] = None
+        else:
+            hours = hours or 0
+            minutes = int(minutes) or 0
+            cleaned_data['duration'] = timedelta(hours=hours, minutes=minutes)
+
         return cleaned_data

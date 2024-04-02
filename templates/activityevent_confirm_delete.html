@@ -11,6 +11,6 @@
     {% csrf_token %}
     <button type="submit">Remove</button>
     </form>
-    <a href="{% url 'current_day' %}">Cancel</a>
+    <a href="{% url 'day' date=activityevent.activity_date|date:"Y-m-d" %}">Cancel</a>
 
 {% endblock content %}
