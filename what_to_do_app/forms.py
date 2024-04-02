@@ -29,6 +29,11 @@ class ActivityForm(forms.ModelForm):
 
 
 class ActivityEventForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+        self.fields['activity'].queryset = Activity.objects.filter(user=user)
+
     activity_date = forms.DateField(
         widget=forms.widgets.HiddenInput(),
         initial=datetime.today().strftime('%Y-%m-%d')

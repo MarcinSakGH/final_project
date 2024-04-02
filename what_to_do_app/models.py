@@ -64,7 +64,8 @@ class UserActivityEmotion(models.Model):
         ('AFTER', 'After activity')
     ]
 
-    user_activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     emotion = models.ForeignKey(Emotion, on_delete=models.CASCADE)
     intensity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
     note = models.TextField(blank=True, null=True)

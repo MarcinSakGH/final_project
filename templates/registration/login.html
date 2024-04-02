@@ -10,5 +10,10 @@
     {{ form.as_p }}
     <button type="submit">Log In</button>
     </form>
+    
+    {% if request.session.login_attempts >= 3 %}
+        Did you forget your password ? Click <a href="{% url 'password_reset' %}">here</a> to reset it.
+    
+    {% endif %}
 
 {% endblock content %}
