@@ -52,6 +52,7 @@ class Activity(models.Model):
     description = models.TextField(blank=True, null=True)
     user_emotions = models.ManyToManyField(Emotion, through='UserActivityEmotion', related_name='user_activities')
 
+
     def __str__(self):
         return self.name
 

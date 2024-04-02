@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (SignUpView, CustomUserUpdateView, ActivityListView, ActivityCreateView, ActivityUpdateView,
-                    ActivityDeleteView, DayView)
+                    ActivityDeleteView, DayView, add_activity, ActivityEventDeleteView)
 from django.contrib.auth.views import LogoutView
 
 
@@ -13,4 +13,6 @@ urlpatterns = [
     path('activities/edit/<int:pk>', ActivityUpdateView.as_view(), name='activity_update'),
     path('activities/delete/<int:pk>', ActivityDeleteView.as_view(), name='activity_delete'),
     path('current_day/', DayView.as_view(), name='current_day'),
+    path('add_activity/', add_activity, name='add_activity'),
+    path('activity_event/delete/<int:pk>', ActivityEventDeleteView.as_view(), name='activity_event_delete'),
 ]

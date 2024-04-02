@@ -8,17 +8,39 @@
     <h1>{{ current_day_of_week }} - {{ today }}</h1>
 
     <h2>Today's activities:</h2>
+
     {% if activities %}
-        <ul>{% for activity in activities %}
-        <li>{{ activity.activity }} - {{ activity.comment }} - {{ activity.duration }}</li>
+   <table>
+    <thead>
+        <tr>
+            <th>Activity</th>
+            <th>Comment</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for activity in activities %}
+            <tr>
+                <td>{{ activity.activity }}</td>
+                <td>{{ activity.comment }}</td>
+                <td>{{ activity.duration }}</td>
+                <td><a href="{% url 'activity_event_delete' activity.id %}">Delete</a></td>
+            </tr>
         {% endfor %}
-        </ul>
+    </tbody>
+</table>
+        {% else %}
+        <p>No activities added for today.</p>
     {% endif %}
+
+    <h2>Add new activity to the current day:</h2>
 
     <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Add activity to the current day</button>
-    </form>
+    </form> <br>
+
+    <a href="{% url 'activity_create' %}" class="btn">Or create a new activity</a>
 
 {% endblock content %}

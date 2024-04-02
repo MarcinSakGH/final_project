@@ -1,11 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, View, ListView, DeleteView, UpdateView
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from .forms import CustomUserCreationForm, CustomUserChangeForm, ActivityForm, ActivityEventForm
 from .models import Activity, ActivityEvent
 
@@ -64,10 +64,31 @@ class DayView(LoginRequiredMixin, View):
                'today': today}
         return render(request, 'currentDayView.html', context=ctx)
     def post(self, request, *args, **kwargs):
-        current_day_of_week = date.today().weekday()
         form = ActivityEventForm(request.POST)
         if form.is_valid():
+            duration_hours = form.cleaned_data.get('duration_hours', 0)
+            duration_minutes = int(form.cleaned_data.get('duration_minutes', 0))
+            duration = timedelta(hours=duration_hours, minutes=duration_minutes)
             activity = form.save(commit=False)
+            activity.duration = duration
             activity.user = request.user
             activity.save()
             return HttpResponseRedirect(reverse_lazy('current_day'))
+
+
+def add_activity(request):
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            # save activity to database
+            activity = form.save()
+            return redirect('current_day', day=activity.date)
+    else:
+        form = ActivityForm(initial={'date': date.today()})
+    return render(request, 'activity_form.html', {'form': form})
+
+
+class ActivityEventDeleteView(DeleteView):
+    model = ActivityEvent
+    template_name = 'activityevent_confirm_delete.html'
+    success_url = reverse_lazy('current_day')
