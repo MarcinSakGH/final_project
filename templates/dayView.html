@@ -20,6 +20,7 @@
             <th>Activity</th>
             <th>Comment</th>
             <th>Duration</th>
+            <th>Emotions</th>
         </tr>
     </thead>
     <tbody>
@@ -28,7 +29,16 @@
                 <td>{{ activity.activity }}</td>
                 <td>{{ activity.comment }}</td>
                 <td>{{ activity.duration }}</td>
+                <td>
+                    {% for user_activity_emotion in activity.useractivityemotion_set.all %}
+                        Emotion: {{ user_activity_emotion.emotion.name }}<br>
+                        Intensity: {{ user_activity_emotion.intensity }}<br>
+                        {% endfor %}
+                </td>
                 <td><a href="{% url 'activity_event_delete' activity.id %}">Delete</a></td>
+                <td>
+                    <button class="add-emotion" data-activity-id="{{ activity.id }}">Add Emotion</button>
+                </td>
             </tr>
         {% endfor %}
     </tbody>
@@ -37,14 +47,33 @@
         <p>No activities added for selected day.</p>
     {% endif %}
 
+{#    <h2>User Activity Emotion Form</h2>#}
+{#    <form method="post">#}
+{#    {% csrf_token %}#}
+{#    {{ user_activity_emotion_form.as_p }}#}
+{#    <button type="submit">Submit</button>#}
+{#    </form>#}
+
     <h2>Add new activity to the selected day:</h2>
 
     <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ activity_event_form.as_p }}
     <button type="submit">Add activity to the selected day</button>
     </form> <br>
 
-    <a href="{% url 'activity_create' %}" class="btn">Or create a new activity</a>
+    Or create a <a href="{% url 'activity_create' %}" class="btn">New activity</a>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script type="text/javascript">
+    var buttons = document.querySelectorAll('.add-emotion');
+    buttons.forEach(function(button) {
+        button.addEventListener('click', function (e) {
+            var activityID = e.target.getAttribute('data-activity-id');
+            window.location.href = '/add_emotion/' + activityID + '/'
+        });
+    });
+    </script>
 
 {% endblock content %}

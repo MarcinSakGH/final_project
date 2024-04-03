@@ -1,5 +1,6 @@
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
+from django.db.models import Prefetch
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
@@ -7,8 +8,9 @@ from django.views.generic import CreateView, View, ListView, DeleteView, UpdateV
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from datetime import datetime, date, timedelta
-from .forms import CustomUserCreationForm, CustomUserChangeForm, ActivityForm, ActivityEventForm
-from .models import Activity, ActivityEvent
+from .forms import CustomUserCreationForm, CustomUserChangeForm, ActivityForm, ActivityEventForm, \
+    UserActivityEmotionForm
+from .models import Activity, ActivityEvent, UserActivityEmotion
 from django.contrib.auth.decorators import login_required
 
 
@@ -86,18 +88,23 @@ class DayView(LoginRequiredMixin, View):
             current_date = datetime.strptime(date, '%Y-%m-%d').date()
         else:
             current_date = datetime.now().date()
-        form = ActivityEventForm(user=request.user)
+        activity_event_form = ActivityEventForm(user=request.user)
+        user_activity_emotion_form = UserActivityEmotionForm(prefix='uae')
         previous_day = current_date - timedelta(days=1)
         next_day = current_date + timedelta(days=1)
-        print(self.request.user, self.request.user.id)
+        # print(self.request.user, self.request.user.id)
+
+        user_activity_emotion_prefetch = Prefetch('useractivityemotion_set',
+                                                  queryset=UserActivityEmotion.objects.filter(
+                                                      user=self.request.user))
         activities = ActivityEvent.objects.filter(
             user=self.request.user,
             activity_date=current_date
-        ).order_by('-activity_date')
-        print(activities)
+        ).prefetch_related(user_activity_emotion_prefetch).order_by('-activity_date')
         current_day_of_week = current_date.strftime("%A")
         ctx = {
-            "form": form,
+            "activity_event_form": activity_event_form,
+            "user_activity_emotion_form": user_activity_emotion_form,
             "current_day_of_week": current_day_of_week,
             "activities": activities,
             "today": current_date,
@@ -111,10 +118,10 @@ class DayView(LoginRequiredMixin, View):
             current_date = datetime.strptime(date, '%Y-%m-%d').date()
         else:
             current_date = datetime.now().date()
-        form = ActivityEventForm(request.POST, user=request.user)
-        if form.is_valid():
-            duration_hours = form.cleaned_data.get('duration_hours', 0)
-            duration_minutes = int(form.cleaned_data.get('duration_minutes', 0))
+        activity_event_form = ActivityEventForm(request.POST, user=request.user)
+        if activity_event_form.is_valid():
+            duration_hours = activity_event_form.cleaned_data.get('duration_hours', 0)
+            duration_minutes = int(activity_event_form.cleaned_data.get('duration_minutes', 0))
 
             if duration_hours is None and duration_minutes is None:
                 duration = None
@@ -123,11 +130,18 @@ class DayView(LoginRequiredMixin, View):
                 duration_minutes = int(duration_minutes or 0)
                 duration = timedelta(hours=duration_hours, minutes=duration_minutes)
 
-            activity = form.save(commit=False)
+            activity = activity_event_form.save(commit=False)
             activity.duration = duration
             activity.user = request.user
             activity.activity_date = current_date
             activity.save()
+
+            user_activity_emotion_form = UserActivityEmotionForm(request.POST, prefix='uae')
+            if user_activity_emotion_form.is_valid():
+                user_activity_emotion = user_activity_emotion_form.save(commit=False)
+                user_activity_emotion.user = request.user
+                user_activity_emotion.save()
+
             return redirect('day', date=current_date.strftime("%Y-%m-%d"))
 
 def add_activity(request):
@@ -151,6 +165,20 @@ class ActivityEventDeleteView(DeleteView):
         return reverse('day', kwargs={'date': activity_date.strftime("%Y-%m-%d")})
 
 
-@login_required
-def show_user(request):
-    return HttpResponse(f'Zalogowany użytkownik: {request.user.username}')
+
+def add_emotion_view(request, activity_id):
+    activity_event = get_object_or_404(ActivityEvent, id=activity_id)
+    activity = activity_event.activity
+    current_date = activity_event.activity_date
+    if request.method == 'POST':
+        form = UserActivityEmotionForm(request.POST)
+        if form.is_valid():
+            emotion = form.save(activityevent=activity_event, commit=False)
+            emotion.user = request.user
+            emotion.activity = activity
+            emotion.save()
+            return redirect('day', date=current_date.strftime("%Y-%m-%d"))
+    else:
+        form = UserActivityEmotionForm()
+    ctx = {'activity': activity, 'form': form}
+    return render(request, 'add_emotion_to_activity.html', ctx)

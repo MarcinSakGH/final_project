@@ -50,29 +50,12 @@ class Activity(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    user_emotions = models.ManyToManyField(Emotion, through='UserActivityEmotion', related_name='user_activities')
 
 
     def __str__(self):
         return self.name
 
 
-class UserActivityEmotion(models.Model):
-    STATE_CHOICES = [
-        ('BEFORE', 'Before activity'),
-        ('DURING', 'During activity'),
-        ('AFTER', 'After activity')
-    ]
-
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    emotion = models.ForeignKey(Emotion, on_delete=models.CASCADE)
-    intensity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
-    note = models.TextField(blank=True, null=True)
-    state = models.CharField(max_length=20, choices=STATE_CHOICES)
-
-    def __str__(self):
-        return f'{self.user_activity.name} - {self.emotion.name}'
 
 
 class ActivityEvent(models.Model):
@@ -83,9 +66,28 @@ class ActivityEvent(models.Model):
     activity_time = models.TimeField(null=True, blank=True)
     duration = models.DurationField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
+    user_emotions = models.ManyToManyField(Emotion, through='UserActivityEmotion', related_name='emotions')
 
     def __str__(self):
         return f'{self.user.username} - {self.activity.name} at {self.timestamp}'
+
+
+class UserActivityEmotion(models.Model):
+    STATE_CHOICES = [
+        ('BEFORE', 'Before activity'),
+        ('DURING', 'During activity'),
+        ('AFTER', 'After activity')
+    ]
+
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    activityevent = models.ForeignKey(ActivityEvent, on_delete=models.CASCADE)
+    emotion = models.ForeignKey(Emotion, on_delete=models.CASCADE)
+    intensity = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)])
+    note = models.TextField(blank=True, null=True)
+    state = models.CharField(max_length=20, choices=STATE_CHOICES)
+
+    def __str__(self):
+        return f'{self.user} - {self.emotion.name}'
 
 class Notification(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

@@ -1,8 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.db.models import Prefetch
 from datetime import datetime, date, timedelta
 
-from .models import CustomUser, Activity, ActivityEvent
+from .models import CustomUser, Activity, ActivityEvent, UserActivityEmotion, Emotion, EmotionCategory
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -63,3 +64,39 @@ class ActivityEventForm(forms.ModelForm):
             cleaned_data['duration'] = timedelta(hours=hours, minutes=minutes)
 
         return cleaned_data
+
+def get_emotion_choices():
+    categories = EmotionCategory.objects.all().prefetch_related(
+        Prefetch(
+            'emotions',
+            queryset=Emotion.objects.all().only('name'),
+            to_attr='emotions_list'
+        )
+    )
+
+    is_grouped_choices = []
+
+    for category in categories:
+        emotion_choices = [(emotion.id, emotion.name) for emotion in category.emotions_list]
+        is_grouped_choices.append((category.name, emotion_choices))
+
+    return is_grouped_choices
+
+class UserActivityEmotionForm(forms.ModelForm):
+    intensity = forms.ChoiceField(choices=[(i, i) for i in range(1, 11)])
+    class Meta:
+        model = UserActivityEmotion
+        fields = ['emotion', 'intensity', 'note', 'state']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['emotion'].choices = get_emotion_choices()
+
+    def save(self, activityevent=None, commit=True):
+        # This method overrides the native form's save method
+        instance = super(UserActivityEmotionForm, self).save(commit=False)
+        if activityevent:
+            instance.activityevent = activityevent
+        if commit:
+            instance.save()
+        return instance
