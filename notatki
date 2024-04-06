@@ -1,0 +1,21 @@
+
+
+def calculate_activity_rating(activity):
+    score = 0
+    emotions = activity.useractivityemotion_set.all()
+
+    # Weights for each emotion category
+    emotion_weights = {'positive': 1, 'neutral': 0, 'negative': -1}
+
+    # Weights for each time of emotion
+    time_weights = {'before': 1, 'during': 2, 'after': 3}
+
+    for emotion in emotions:
+        emotion_weight = emotion_weights.get(emotion.emotion.emotion_category.name)
+        time_weight = time_weights.get(emotion.emotion_time)
+        score += emotion_weight * emotion.intensity * time_weight
+    return score
+
+W powyższej funkcji, time_weights jest słownikiem, który definiuje wagi dla jednego z trzech momentów:
+przed, podczas i po aktywności. Te wagi są następnie wykorzystywane do mnożenia przez wagę emocji oraz
+jej intensywność. W ten sposób emocje pozytywne doświadczone po aktywności mają największe wartości.

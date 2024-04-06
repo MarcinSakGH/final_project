@@ -1,10 +1,13 @@
+from collections import defaultdict
+
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
 from django.db.models import Prefetch
+from django.utils import timezone
 from django.contrib.auth import login
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView
-from django.views.generic import CreateView, View, ListView, DeleteView, UpdateView
+from django.views.generic import CreateView, View, ListView, DeleteView, TemplateView
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from datetime import datetime, date, timedelta
@@ -182,3 +185,28 @@ def add_emotion_view(request, activity_id):
         form = UserActivityEmotionForm()
     ctx = {'activity': activity, 'form': form}
     return render(request, 'add_emotion_to_activity.html', ctx)
+
+
+class WeekView(TemplateView):
+    template_name = 'week_view.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+
+        today = timezone.now().date()
+
+        start_week = today - timedelta(days=today.weekday())
+        end_week = start_week + timedelta(days=6)
+        week_dates = [start_week + timedelta(days=i) for i in range(7)]
+        week_activities = ActivityEvent.objects.filter(activity_date__range=(start_week, end_week),
+                                                       user=self.request.user)
+
+        # create a dictionary where keys are dates and values are list of activities
+        activities_by_date = defaultdict(list)
+        for activity in week_activities:
+            activities_by_date[activity.activity_date].append(activity)
+
+        # convert activities_by_date dictionary into a list of tuples for the template
+        context['week_dates_with_activities'] = [(date, activities_by_date[date]) for date in week_dates]
+
+        return context

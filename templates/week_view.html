@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Week View{% endblock %}
+
+{% block content %}
+<h1>Week View</h1>
+
+    <style>
+    th {
+        width: 14.28%;  /* 100% / 7 days, ensures equal width for all days */
+        text-align: center;  /* Center alignment of text */
+    }
+</style>
+    
+<table>
+    <thead>
+    <tr>
+        {% for date, activities in week_dates_with_activities %}
+        <th>{{ date|date:"l" }}</th> <!-- Day of the week -->
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for date, activities in week_dates_with_activities %}
+        <th>{{ date|date:"F j, Y" }}</th> <!-- Date -->
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        {% for date, activities in week_dates_with_activities %}
+        <td>
+            <ul>
+                {% for activity in activities %}
+                    <li>{{ activity.activity }}</li>
+                {% empty %}
+                    <li>No activities scheduled for this day.</li>
+                {% endfor %}
+            </ul>
+            <a href="{% url 'day' date=date %}">Go to Day View</a>
+        </td>
+        {% endfor %}
+    </tr>
+    </tbody>
+</table>
+{% endblock %}

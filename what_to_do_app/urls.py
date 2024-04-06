@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (SignUpView, CustomUserUpdateView, ActivityListView, ActivityCreateView, ActivityUpdateView,
                     ActivityDeleteView, add_activity, ActivityEventDeleteView, DayView, CustomLoginView,
-                    add_emotion_view)
+                    add_emotion_view, WeekView)
 from django.contrib.auth.views import LogoutView, LoginView
 
 
@@ -19,4 +19,5 @@ urlpatterns = [
     path('add_activity/', add_activity, name='add_activity'),
     path('activity_event/delete/<int:pk>', ActivityEventDeleteView.as_view(), name='activity_event_delete'),
     path('add_emotion/<int:activity_id>/', add_emotion_view, name='add_emotion'),
+    path('week/', WeekView.as_view(), name='week'),
 ]
