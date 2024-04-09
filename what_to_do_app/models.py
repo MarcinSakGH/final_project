@@ -67,6 +67,26 @@ class ActivityEvent(models.Model):
     duration = models.DurationField(blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     user_emotions = models.ManyToManyField(Emotion, through='UserActivityEmotion', related_name='emotions')
+    activity_score = models.FloatField(default=0, blank=True, null=True)
+
+    def calculate_activity_score(self):
+        # wages for different emotion states
+        state_weights = {'BEFORE': 0.2, 'DURING': 0.3, 'AFTER': 0.5}
+        total_score = 0
+
+        # get all emotions associated with this ActivityEvent
+        user_activity_emotions = UserActivityEmotion.objects.filter(activityevent=self)
+
+        # for every UserActivityEmotion count score and add to total_score
+        for user_activity_emotion in user_activity_emotions:
+            emotion_type_weight = user_activity_emotion.emotion.emotion_type.weight
+            state_weight = state_weights[user_activity_emotion.state]
+            score = user_activity_emotion.intensity * emotion_type_weight * state_weight
+            total_score += score
+
+        # update field activity_score for this ActivityEvent
+        self.activity_score = total_score
+        self.save()
 
     def __str__(self):
         return f'{self.user.username} - {self.activity.name} at {self.timestamp}'
