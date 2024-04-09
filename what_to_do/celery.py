@@ -15,7 +15,7 @@ app.autodiscover_tasks()
 CELERY_BEAT_SCHEDULE = {
     'check_user_activity': {
         'task': 'what_to_do_app.tasks.check_user_activity',
-        'schedule': crontab(hour='19', minute='05')
+        'schedule': crontab(hour='18', minute='00')
     }
 }
 
