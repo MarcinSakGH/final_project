@@ -51,6 +51,16 @@ class Activity(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
 
+    def calculate_total_activity_score(self):
+        total_activity_score = 0
+        # get all ActivityEvents associated with this Activity
+        activity_events = ActivityEvent.objects.filter(activity=self)
+
+        # for every activityEvent count score and add to total_score
+        for event in activity_events:
+            total_activity_score += event.activity_score
+
+        return total_activity_score
 
     def __str__(self):
         return self.name
