@@ -6,7 +6,8 @@
 
     <div style="display: flex; justify-content: space-around; align-items: center">
         <a href="{% url 'day' previous_day|date:'Y-m-d' %}">Previous day</a>
-        <h1>{{ current_day_of_week }} - {{ today }}</h1>
+        <h1>{{ current_day_of_week }} - {{ today }}
+            {% if current_day_status %}({{ current_day_status }}){% endif %}</h1>
         <a href="{% url 'day' next_day|date:'Y-m-d' %}">Next day</a>
     </div>
     

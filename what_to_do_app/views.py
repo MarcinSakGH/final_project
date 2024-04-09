@@ -86,6 +86,17 @@ class ActivityDeleteView(LoginRequiredMixin, DeleteView):
 
 
 class DayView(LoginRequiredMixin, View):
+    def day_status(self, day):
+        today = datetime.today().date()
+        tomorrow = today + timedelta(days=1)
+        yesterday = today - timedelta(days=1)
+        if day == today:
+            return 'Today'
+        if day == tomorrow:
+            return 'Tomorrow'
+        if day == yesterday:
+            return 'Yesterday'
+
     def get(self, request, date=None):
         if date:
             current_date = datetime.strptime(date, '%Y-%m-%d').date()
@@ -105,6 +116,7 @@ class DayView(LoginRequiredMixin, View):
             activity_date=current_date
         ).prefetch_related(user_activity_emotion_prefetch).order_by('-activity_date')
         current_day_of_week = current_date.strftime("%A")
+        current_day_status = self.day_status(current_date)
         ctx = {
             "activity_event_form": activity_event_form,
             "user_activity_emotion_form": user_activity_emotion_form,
@@ -112,7 +124,8 @@ class DayView(LoginRequiredMixin, View):
             "activities": activities,
             "today": current_date,
             'previous_day': previous_day,
-            "next_day": next_day
+            "next_day": next_day,
+            'current_day_status': current_day_status
         }
         return render(request, 'dayView.html', context=ctx)
 
