@@ -156,11 +156,13 @@ class DayView(LoginRequiredMixin, View):
                 emotions = ", ".join([emotion.name for emotion in activity.user_emotions.all()])
 
                 # format all info as string and add them to the list
-                activity_info = (f"Activity: {activity.activity.name}, Time: {durations},"
-                                 f"Description: {descriptions}, Emotions: {emotions}")
+                activity_info = (f"During the activity of {activity.activity.name}, which lasted for {durations}, "
+                                 f"the following emotions were experienced: {emotions}. "
+                                 f"The activity had the following description: {descriptions}.")
                 activities_info.append(activity_info)
 
             data_to_summarize = " ".join(activities_info) # join all information in one string
+            print('Data to be summarized:', data_to_summarize)
             summary = generate_summary(data_to_summarize)
             ctx['summary'] = summary
 

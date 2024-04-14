@@ -8,7 +8,15 @@ def generate_summary(input_text):
 
     response = client.chat.completions.create(model="gpt-3.5-turbo",
     messages=[
-        {"role": "system", "content": "You are a helpful assistant"},
+        {
+            "role": "system",
+            "content": """You are a helpful assistant. 
+          You always give an answer in English, unless asked otherwise.
+          When replying, you are addressing in personal form, directly to the user.
+          Take the user's input including the activity's name, duration, description, 
+          and emotions associated with it and generate a detailed summary.
+          """
+        },
         {"role": "user", "content": f"{input_text}"},
     ])
 

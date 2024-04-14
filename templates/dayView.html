@@ -17,33 +17,34 @@
     {% if activities %}
    <table>
     <thead>
+    <tr>
+        <th>Activity</th>
+        <th>Comment</th>
+        <th>Duration</th>
+        <th>Emotions</th>
+        <th>Operations</th> <!-- New column header for Edit and Delete -->
+    </tr>
+</thead>
+<tbody>
+    {% for activity in activities %}
         <tr>
-            <th>Activity</th>
-            <th>Comment</th>
-            <th>Duration</th>
-            <th>Emotions</th>
+            <td>{{ activity.activity }}</td>
+            <td>{{ activity.comment }}</td>
+            <td>{{ activity.duration }}</td>
+            <td>
+                {% for user_activity_emotion in activity.useractivityemotion_set.all %}
+                    Emotion: {{ user_activity_emotion.emotion.name }}<br>
+                    Intensity: {{ user_activity_emotion.intensity }}<br>
+                {% endfor %}
+                <button class="add-emotion" data-activity-id="{{ activity.id }}">Add Emotion</button><!-- Moved Add Emotion button here -->
+            </td>
+            <td>
+                <a href="{% url 'activity_event_update' activity.id %}">Edit</a> /
+                <a href="{% url 'activity_event_delete' activity.id %}">Delete</a>
+            </td>
         </tr>
-    </thead>
-    <tbody>
-        {% for activity in activities %}
-            <tr>
-                <td>{{ activity.activity }}</td>
-                <td>{{ activity.comment }}</td>
-                <td>{{ activity.duration }}</td>
-                <td>
-                    {% for user_activity_emotion in activity.useractivityemotion_set.all %}
-                        Emotion: {{ user_activity_emotion.emotion.name }}<br>
-                        Intensity: {{ user_activity_emotion.intensity }}<br>
-                        {% endfor %}
-                </td>
-                <td><a href="{% url 'activity_event_update' activity.id %}">Edit</a></td>
-                <td><a href="{% url 'activity_event_delete' activity.id %}">Delete</a></td>
-                <td>
-                    <button class="add-emotion" data-activity-id="{{ activity.id }}">Add Emotion</button>
-                </td>
-            </tr>
-        {% endfor %}
-    </tbody>
+    {% endfor %}
+</tbody>
 </table>
         {% else %}
         <p>No activities added for selected day.</p>
@@ -66,6 +67,7 @@
 
     Or create a <a href="{% url 'activity_create' %}" class="btn">New activity</a>
     
+    <h2>Summary of the day</h2>
     <form method="GET">
     {% csrf_token %}
     <button type="submit" name="request_summary">Generate Summary</button>
