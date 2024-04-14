@@ -1,4 +1,6 @@
 from collections import defaultdict
+from .utils import generate_summary
+
 
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse
@@ -143,6 +145,25 @@ class DayView(LoginRequiredMixin, View):
             "next_day": next_day,
             'current_day_status': current_day_status
         }
+        if 'request_summary' in request.GET:
+            activities_info = []
+            for activity in activities:
+                # for every activity get description, duration, comments and associated emotions
+                descriptions = activity.activity.description
+                durations = str(activity.duration)
+                comments = activity.comment
+                # get names of emotions associated with every activity
+                emotions = ", ".join([emotion.name for emotion in activity.user_emotions.all()])
+
+                # format all info as string and add them to the list
+                activity_info = (f"Activity: {activity.activity.name}, Time: {durations},"
+                                 f"Description: {descriptions}, Emotions: {emotions}")
+                activities_info.append(activity_info)
+
+            data_to_summarize = " ".join(activities_info) # join all information in one string
+            summary = generate_summary(data_to_summarize)
+            ctx['summary'] = summary
+
         return render(request, 'dayView.html', context=ctx)
 
     def post(self, request, date=None, *args, **kwargs):

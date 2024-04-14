@@ -65,7 +65,16 @@
     </form> <br>
 
     Or create a <a href="{% url 'activity_create' %}" class="btn">New activity</a>
+    
+    <form method="GET">
+    {% csrf_token %}
+    <button type="submit" name="request_summary">Generate Summary</button>
+    </form>
 
+    {% if summary %}
+    <p>Summary: {{ summary }}</p>
+    {% endif %}
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script type="text/javascript">
