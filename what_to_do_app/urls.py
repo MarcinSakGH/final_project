@@ -20,5 +20,6 @@ urlpatterns = [
     path('activity_event/delete/<int:pk>', ActivityEventDeleteView.as_view(), name='activity_event_delete'),
     path('add_emotion/<int:activity_id>/', add_emotion_view, name='add_emotion'),
     path('week/', WeekView.as_view(), name='week'),
+    path('week/<str:date>/', WeekView.as_view(), name='week_view'),
     path('activity_event/edit/<int:pk>/', ActivityEventUpdateView.as_view(), name='activity_event_update'),
 ]

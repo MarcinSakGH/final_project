@@ -3,14 +3,20 @@
 {% block title %}Week View{% endblock %}
 
 {% block content %}
-<h1>Week View</h1>
-
+<h1>Week View: {% if is_current_week %}Current Week{% else %}{{ start_week }} - {{ end_week }}{% endif %}</h1>
+    
     <style>
     th {
         width: 14.28%;  /* 100% / 7 days, ensures equal width for all days */
         text-align: center;  /* Center alignment of text */
     }
 </style>
+    
+    <div class="week-navigation">  <!-- New div for week navigation -->
+    <a href="{% url 'week_view' date=prev_week %}">Previous Week</a>
+    |
+    <a href="{% url 'week_view' date=next_week %}">Next Week</a>
+</div>
     
 <table>
     <thead>

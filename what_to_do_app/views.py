@@ -284,10 +284,27 @@ class WeekView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
 
-        today = timezone.now().date()
+        start_week = self.kwargs.get('date', timezone.now().date())
+        if isinstance(start_week, str):
+            try:
+                start_week = datetime.strptime(start_week, '%Y-%m-%d').date()
+            except ValueError:
+                print('Incorrect date format, should be YYYY-MM-DD')
+                start_week = timezone.now().date()
 
-        start_week = today - timedelta(days=today.weekday())
         end_week = start_week + timedelta(days=6)
+
+        context['start_week'] = start_week
+        context['end_week'] = end_week
+
+        is_current_week = start_week <= timezone.now().date() <= end_week
+        context['is_current_week'] = is_current_week
+
+        # Calculate the start date of the previous week and next week based on the specified date
+        prev_week_start = start_week - timedelta(days=7)
+        next_week_start = start_week + timedelta(days=7)
+
+        # compute all dates in current week and filter activities that fall in current week
         week_dates = [start_week + timedelta(days=i) for i in range(7)]
         week_activities = ActivityEvent.objects.filter(activity_date__range=(start_week, end_week),
                                                        user=self.request.user)
@@ -299,5 +316,9 @@ class WeekView(TemplateView):
 
         # convert activities_by_date dictionary into a list of tuples for the template
         context['week_dates_with_activities'] = [(date, activities_by_date[date]) for date in week_dates]
+
+        # add the start date of the previous week and next week to the context
+        context['prev_week'] = prev_week_start.strftime("%Y-%m-%d")
+        context['next_week'] = next_week_start.strftime("%Y-%m-%d")
 
         return context
