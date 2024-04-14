@@ -6,12 +6,13 @@
 
     {% for activity in object_list %}
       <p>
-        {{ activity.name }}
+        {{ activity.name }} 
+        (Total Activity Score: {{ activity.calculate_total_activity_score }})
         <a href="{% url 'activity_update' activity.id %}">Edit</a>
         <a href="{% url 'activity_delete' activity.id %}">Delete</a>
       <br>
-          {% if activity.description %}
-      - {{ activity.description }}
+          {% if activity.activity.description %}
+      - {{ activity.activity.description }}
       {% endif %}
       </p>
     {% endfor %}

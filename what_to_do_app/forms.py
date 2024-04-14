@@ -41,7 +41,7 @@ class ActivityEventForm(forms.ModelForm):
     )
     activity_time = forms.TimeField(
         input_formats=['%H:%M'],
-        widget=forms.widgets.TimeInput(attrs={'type': 'time'}),
+        widget=forms.widgets.TimeInput(attrs={'type': 'time', 'format': '%H:%M'}),
         help_text='Format: 24-hour clock'
     )
     duration_hours = forms.IntegerField(min_value=0, required=False)
@@ -65,6 +65,12 @@ class ActivityEventForm(forms.ModelForm):
 
         return cleaned_data
 
+    def save(self, commit=True):
+        instance = super(ActivityEventForm, self).save(commit=False)
+        instance.duration = self.cleaned_data['duration']
+        if commit:
+            instance.save()
+        return instance
 def get_emotion_choices():
     categories = EmotionCategory.objects.all().prefetch_related(
         Prefetch(

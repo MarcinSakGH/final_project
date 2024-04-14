@@ -36,6 +36,7 @@
                         Intensity: {{ user_activity_emotion.intensity }}<br>
                         {% endfor %}
                 </td>
+                <td><a href="{% url 'activity_event_update' activity.id %}">Edit</a></td>
                 <td><a href="{% url 'activity_event_delete' activity.id %}">Delete</a></td>
                 <td>
                     <button class="add-emotion" data-activity-id="{{ activity.id }}">Add Emotion</button>

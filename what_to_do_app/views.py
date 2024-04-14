@@ -53,10 +53,26 @@ class CustomUserUpdateView(UpdateView):
 class ActivityListView(LoginRequiredMixin, ListView):
     model = Activity
     template_name = 'activity_list.html'
+    context_object_name = 'activities'
 
     def get_queryset(self):
         # Ogranicz zwracany queryset do aktywności bieżącego użytkownika
         return Activity.objects.filter(user=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        activities_with_score = []
+        for activity in context['activities']:
+            total_score = activity.calculate_total_activity_score()
+            activities_with_score.append(
+                {
+                    'activity': activity,
+                    'total_score': total_score if total_score else 0
+                }
+            )
+        activities_with_score.sort(key=lambda x: x['total_score'], reverse=True)
+        context['activities'] = activities_with_score
+        return context
 
 class ActivityCreateView(LoginRequiredMixin, CreateView):
     model = Activity
@@ -171,6 +187,35 @@ def add_activity(request):
         form = ActivityForm(initial={'date': date.today()})
     return render(request, 'activity_form.html', {'form': form})
 
+
+class ActivityEventUpdateView(LoginRequiredMixin, UpdateView):
+    model = ActivityEvent
+    form_class = ActivityEventForm
+    template_name = 'activity_event_edit.html'
+
+    def get_success_url(self):
+        activity_date = self.object.activity_date
+        return reverse('day', kwargs={'date': activity_date.strftime("%Y-%m-%d")})
+
+    def get_form_kwargs(self):
+        # get the current form kwargs
+        kwargs = super().get_form_kwargs()
+        # update the kwargs with the user_id
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+
+        # Get the current duration
+        duration = self.object.duration
+
+        if duration:
+            # Convert duration into hours and minutes
+            initial['duration_hours'], rem = divmod(duration.seconds, 3600)
+            initial['duration_minutes'] = rem // 60
+
+        return initial
 
 class ActivityEventDeleteView(DeleteView):
     model = ActivityEvent

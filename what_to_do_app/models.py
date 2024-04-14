@@ -5,6 +5,8 @@ from django.db import models
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 # Create your models here.
 
@@ -124,3 +126,8 @@ class Notification(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
+
+
+@receiver([post_save, post_delete], sender=UserActivityEmotion)
+def update_activity_score(sender, instance, **kwargs):
+    instance.activityevent.calculate_activity_score()
