@@ -145,6 +145,8 @@ class DayView(LoginRequiredMixin, View):
             "next_day": next_day,
             'current_day_status': current_day_status
         }
+
+        summary_key = f'summary_{current_date}'
         if 'request_summary' in request.GET:
             activities_info = []
             for activity in activities:
@@ -163,8 +165,16 @@ class DayView(LoginRequiredMixin, View):
 
             data_to_summarize = " ".join(activities_info) # join all information in one string
             print('Data to be summarized:', data_to_summarize)
-            summary = generate_summary(data_to_summarize)
+            # check if the summary exists in the session. If it doesn't - create a new one
+            summary = request.session.get(summary_key)
+            if not summary:
+                summary = generate_summary(data_to_summarize)
+                request.session[summary_key] = summary
             ctx['summary'] = summary
+        else:
+            summary = request.session.get(summary_key) # retrieve from session
+            if summary:
+                ctx['summary'] = summary
 
         return render(request, 'dayView.html', context=ctx)
 
