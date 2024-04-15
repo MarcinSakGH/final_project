@@ -1,19 +1,25 @@
 from collections import defaultdict
-
+from datetime import datetime, date, timedelta
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.contrib.auth import login
 from django.urls import reverse_lazy
-from django.contrib.auth.views import LoginView
-from django.views.generic import CreateView, View, ListView, DeleteView, TemplateView
-from django.views.generic.edit import UpdateView
+from django.views.generic import CreateView, View, ListView, DeleteView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from datetime import datetime, date, timedelta
-from .forms import CustomUserCreationForm, CustomUserChangeForm, ActivityForm, ActivityEventForm, \
+from django.contrib.auth.views import LoginView
+
+from .forms import (
+    CustomUserCreationForm,
+    CustomUserChangeForm,
+    ActivityForm,
+    ActivityEventForm,
     UserActivityEmotionForm
+)
+
 from .models import Activity, ActivityEvent, UserActivityEmotion
+
 from .utils import generate_summary
 
 
