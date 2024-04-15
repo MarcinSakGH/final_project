@@ -194,7 +194,8 @@ class ActivityDeleteView(LoginRequiredMixin, DeleteView):
 
     Attributes:
         model: The model class which the view is associated with (Activity).
-        template_name: The name of the template to be used for rendering the delete confirmation page ('activity_confirm_delete.html').
+        template_name: The name of the template to be used for rendering the delete confirmation page
+        ('activity_confirm_delete.html').
         success_url: The URL to redirect to after successful deletion of the Activity object ('activity_list').
 
     """
@@ -213,12 +214,17 @@ class DayView(LoginRequiredMixin, View):
 
     Methods:
         - day_status(day): Returns a string indicating the status of the given day (Today, Tomorrow, Yesterday).
-        - get(request, date=None): Handles GET requests for the day view page. If a date is provided, it sets the current date to the specified date, otherwise it uses the current date.
-    * It creates instances of the activity event and user activity emotion forms, retrieves the activities for the current date, and prepares the context for rendering the template. If the
-    * 'request_summary' parameter is present in the request query params, it generates a summary of the activities and stores it in the session. If a summary already exists in the session
+        - get(request, date=None): Handles GET requests for the day view page. If a date is provided, it sets the
+        current date to the specified date, otherwise it uses the current date.
+    * It creates instances of the activity event and user activity emotion forms, retrieves the activities for the
+    current date, and prepares the context for rendering the template. If the
+    * 'request_summary' parameter is present in the request query params, it generates a summary of the activities and
+    stores it in the session. If a summary already exists in the session
     *, it retrieves it and adds it to the context. It then renders the day view template with the context.
-        - post(request, date=None, *args, **kwargs): Handles POST requests for the day view page. If a date is provided, it sets the current date to the specified date, otherwise it uses
-    * the current date. It validates the submitted activity event form and, if valid, saves the activity event with the specified duration, user, and date. It also saves the user activity
+        - post(request, date=None, *args, **kwargs): Handles POST requests for the day view page. If a date is provided,
+         it sets the current date to the specified date, otherwise it uses
+    * the current date. It validates the submitted activity event form and, if valid, saves the activity event with
+     the specified duration, user, and date. It also saves the user activity
     * emotion form for the user. It then redirects to the day view page for the current date.
 
     Note: This class requires the LoginRequiredMixin and View classes.
@@ -370,7 +376,8 @@ class ActivityEventUpdateView(LoginRequiredMixin, UpdateView):
     - get_form_kwargs(): Returns the keyword arguments to use when instantiating the form class. It first calls the
     get_form_kwargs() method of the parent class to get the initial kwargs
     *, then adds the 'user' attribute with the current user from the request.
-    - get_initial(): Returns the initial data for the form. It first calls the get_initial() method of the parent class to get the initial data, then adds the 'duration_hours' and 'duration
+    - get_initial(): Returns the initial data for the form. It first calls the get_initial() method of the parent class
+    to get the initial data, then adds the 'duration_hours' and 'duration
     *_minutes' attributes based on the duration of the activity event converted into hours and minutes.
 
     Note: This class requires the LoginRequiredMixin mixin to ensure that only logged-in users can access the view.
