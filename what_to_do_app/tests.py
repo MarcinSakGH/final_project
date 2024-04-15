@@ -70,3 +70,22 @@ class CustomLoginViewTest(TestCase):
         self.assertEqual(response.status_code, 200)  # after unsuccessful login stays on the same page
         self.assertEqual(self.client.session['login_attempts'], 1)  # check if 'login_attempts' is updated
 
+
+@pytest.mark.django_db
+def test_CustomUserUpdateView(client):
+    test_user = CustomUser.objects.create_user(username='test_user', password='test_password')
+    url = reverse('user-update')
+    client.login(username='test_user', password='test_password')
+
+    response = client.get(url)
+    assert response.status_code == 200
+
+    assert 'form' in response.context
+
+    new_first_name = 'new_test_first_name'
+    response = client.post(url, {'first_name': new_first_name,
+                                 'username': test_user.username,
+                                })
+    print(response.content)
+    assert response.status_code == 302  # check if redirected after updating the data
+    assert response.url == reverse('home')  # check if redirects to correct site
