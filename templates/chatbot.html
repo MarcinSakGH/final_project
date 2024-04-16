@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Chatbot{% endblock %}
+
+{% block content %}
+
+<h1>Chatbot</h1>
+
+<div>
+    {% for message in messages %}
+        <p>
+            <strong>{{ message.role }}:</strong> {{ message.content }}
+        </p>
+    {% endfor %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="message">Your message:</label>
+    <input id="message" type="text" name="message">
+    <button type="submit">Send</button>
+</form>
+
+{% endblock content %}

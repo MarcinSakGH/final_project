@@ -13,8 +13,9 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, View, ListView, DeleteView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.template.loader import render_to_string
-from django.core.files.storage import FileSystemStorage
+
+from openai import OpenAI
+from decouple import config
 
 # Local application/library specific imports.
 from .forms import (
@@ -527,3 +528,30 @@ class WeekView(TemplateView):
 
         return context
 
+def chatbot_view(request):
+    api_key = config('OPENAI_KEY')
+    openai = OpenAI(api_key=api_key)
+
+    if 'messages' not in request.session:
+        system_msg = 'What type of chatbot would you like me to be:\n'
+        request.session['messages'] = [{'role': 'system', 'content': system_msg}]
+        request.session['chat_initialized'] = False
+
+    if request.method == 'POST':
+        user_message = request.POST.get('message')
+        role = 'user' if request.session.get('chat_initialized', False) else 'system'
+        request.session['messages'].append({'role': role, 'content': user_message})
+
+        if not request.session.get('chat_initialized', False):
+            request.session['chat_initialized'] = True
+        else:
+            response = openai.chat.completions.create(
+                    model='gpt-3.5-turbo',
+                    messages=request.session['messages'])
+
+            assistant_message = response.choices[0].message.content
+            request.session['messages'].append(
+                {'role': 'assistant', 'content': assistant_message}
+            )
+
+    return render(request, 'chatbot.html', {'messages': request.session['messages']})
