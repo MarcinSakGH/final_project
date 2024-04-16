@@ -2,29 +2,24 @@
 from collections import defaultdict
 from datetime import datetime, date, timedelta
 
-
 # Django related imports
-from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render, reverse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.contrib.auth import login
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, View, ListView, DeleteView, TemplateView, UpdateView
+from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 
-from openai import OpenAI
+# Third party imports
 from decouple import config
+from openai import OpenAI
 
-# Local application/library specific imports.
-from .forms import (
-    CustomUserCreationForm,
-    CustomUserChangeForm,
-    ActivityForm,
-    ActivityEventForm,
-    UserActivityEmotionForm
-)
+# Local application/library specific imports
+from .forms import (ActivityEventForm, ActivityForm, CustomUserChangeForm,
+                    CustomUserCreationForm, UserActivityEmotionForm)
 from .models import Activity, ActivityEvent, UserActivityEmotion
 from .utils import generate_summary
 
@@ -285,13 +280,29 @@ class DayView(LoginRequiredMixin, View):
                 descriptions = activity.activity.description
                 durations = str(activity.duration)
                 comments = activity.comment
-                # get names of emotions associated with every activity
-                emotions = ", ".join([emotion.name for emotion in activity.user_emotions.all()])
 
-                # format all info as string and add them to the list
+                emotion_states = ['BEFORE', 'DURING', 'AFTER']
+                emotions_info = []
+                for emotion_state in emotion_states:
+                    user_activity_emotions = UserActivityEmotion.objects.filter(
+                        activityevent=activity, state=emotion_state)
+                    # get names of emotions associated with every activity for given state and their comments
+                    emotion_comments = [
+                        f"{user_activity_emotion.emotion.name}" + (
+                            f" (Comment: {user_activity_emotion.note})" if user_activity_emotion.note else "")
+                        for user_activity_emotion in user_activity_emotions
+                    ]
+                    emotions = ", ".join(emotion_comments)
+                    if emotions:  # if there are eny emotions for given state
+                        emotions_info.append(
+                            f"The emotions experienced {emotion_state.lower()} the activity were: {emotions} "
+                        )
+                emotions_info = " ".join(emotions_info)  # join all emotions information in one string
+
+                # format all info as one string and add them to the list
                 activity_info = (f"During the activity of {activity.activity.name}, which lasted for {durations}, "
-                                 f"the following emotions were experienced: {emotions}. "
-                                 f"The activity had the following description: {descriptions}.")
+                                 f"{emotions_info} "
+                                 f"The activity had the following comment: {comments}.")
                 activities_info.append(activity_info)
 
             data_to_summarize = " ".join(activities_info)  # join all information in one string
