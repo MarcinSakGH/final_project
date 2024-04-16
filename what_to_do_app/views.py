@@ -293,7 +293,7 @@ class DayView(LoginRequiredMixin, View):
                         for user_activity_emotion in user_activity_emotions
                     ]
                     emotions = ", ".join(emotion_comments)
-                    if emotions:  # if there are eny emotions for given state
+                    if emotions:  # if there are any emotions for a given state
                         emotions_info.append(
                             f"The emotions experienced {emotion_state.lower()} the activity were: {emotions} "
                         )
@@ -306,17 +306,11 @@ class DayView(LoginRequiredMixin, View):
                 activities_info.append(activity_info)
 
             data_to_summarize = " ".join(activities_info)  # join all information in one string
-            print('Data to be summarized:', data_to_summarize)
-            # check if the summary exists in the session. If it doesn't - create a new one
-            summary = request.session.get(summary_key)
-            if not summary:
-                summary = generate_summary(data_to_summarize)
-                request.session[summary_key] = summary
+            summary = generate_summary(data_to_summarize)
+            request.session[summary_key] = summary
             ctx['summary'] = summary
-        else:
-            summary = request.session.get(summary_key)  # retrieve from session
-            if summary:
-                ctx['summary'] = summary
+        elif summary_key in request.session:
+            ctx['summary'] = request.session[summary_key]
 
         return render(request, 'dayView.html', context=ctx)
 
@@ -540,6 +534,22 @@ class WeekView(TemplateView):
         return context
 
 def chatbot_view(request):
+    """
+
+    The `chatbot_view` method is a Django view function that handles the logic for a chatbot in a web application.
+    It takes a request object as a parameter and returns a rendered HTML page as a response.
+
+    Parameters:
+    - `request`: A Django HttpRequest object that represents the current request made by the client.
+
+    Returns:
+    - A Django HttpResponse object that contains the rendered HTML page.
+
+
+    Note: The method assumes that the `config` module is correctly configured
+    and that the 'chatbot.html' template exists.
+
+    """
     api_key = config('OPENAI_KEY')
     openai = OpenAI(api_key=api_key)
 
