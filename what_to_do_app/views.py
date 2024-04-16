@@ -1,7 +1,11 @@
+# Standard library imports
 from collections import defaultdict
 from datetime import datetime, date, timedelta
+
+
+# Django related imports
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.contrib.auth import login
@@ -9,7 +13,10 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, View, ListView, DeleteView, TemplateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
+from django.template.loader import render_to_string
+from django.core.files.storage import FileSystemStorage
 
+# Local application/library specific imports.
 from .forms import (
     CustomUserCreationForm,
     CustomUserChangeForm,
@@ -17,9 +24,7 @@ from .forms import (
     ActivityEventForm,
     UserActivityEmotionForm
 )
-
 from .models import Activity, ActivityEvent, UserActivityEmotion
-
 from .utils import generate_summary
 
 
@@ -268,7 +273,7 @@ class DayView(LoginRequiredMixin, View):
             "today": current_date,
             'previous_day': previous_day,
             "next_day": next_day,
-            'current_day_status': current_day_status
+            'current_day_status': current_day_status,
         }
 
         summary_key = f'summary_{current_date}'
@@ -521,3 +526,4 @@ class WeekView(TemplateView):
         context['next_week'] = next_week_start.strftime("%Y-%m-%d")
 
         return context
+
