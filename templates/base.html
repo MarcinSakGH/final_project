@@ -21,7 +21,10 @@
             <button type="submit">Current Day</button>
         </form> |
         <form method="GET" action="{% url 'week' %}" style="display: inline;">
-            <button type="submit">Week View</button>
+            <button type="submit">Current Week</button>
+        </form> |
+        <form method="GET" action="{% url 'chatbot' %}" style="display: inline;">
+            <button type="submit">AI Assistant</button>
         </form> |
         <form method="POST" action="{% url 'logout' %}" style="display: inline;">
             {% csrf_token %}

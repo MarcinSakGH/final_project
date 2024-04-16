@@ -532,26 +532,36 @@ def chatbot_view(request):
     api_key = config('OPENAI_KEY')
     openai = OpenAI(api_key=api_key)
 
-    if 'messages' not in request.session:
-        system_msg = 'What type of chatbot would you like me to be:\n'
+
+    if 'messages' not in request.session or 'clear' in request.POST:
+        system_msg = 'What type of assistant would you like me to be:\n'
         request.session['messages'] = [{'role': 'system', 'content': system_msg}]
         request.session['chat_initialized'] = False
+        request.session.save()
 
     if request.method == 'POST':
         user_message = request.POST.get('message')
-        role = 'user' if request.session.get('chat_initialized', False) else 'system'
-        request.session['messages'].append({'role': role, 'content': user_message})
+        if user_message is not None:
+            role = 'user' if request.session.get('chat_initialized', False) else 'system'
+            request.session['messages'].append({'role': role, 'content': user_message})
+            request.session.save()
 
-        if not request.session.get('chat_initialized', False):
-            request.session['chat_initialized'] = True
-        else:
-            response = openai.chat.completions.create(
-                    model='gpt-3.5-turbo',
-                    messages=request.session['messages'])
+            if not request.session.get('chat_initialized', False):
+                request.session['chat_initialized'] = True
+                assistant_message = 'AI assistant is ready!'
+                request.session['messages'].append(
+                    {'role': 'assistant', 'content': assistant_message}
+                )
+                request.session.save()
+            else:
+                response = openai.chat.completions.create(
+                        model='gpt-3.5-turbo',
+                        messages=request.session['messages'])
 
-            assistant_message = response.choices[0].message.content
-            request.session['messages'].append(
-                {'role': 'assistant', 'content': assistant_message}
-            )
+                assistant_message = response.choices[0].message.content
+                request.session['messages'].append(
+                    {'role': 'assistant', 'content': assistant_message}
+                )
+        request.session.save()
 
     return render(request, 'chatbot.html', {'messages': request.session['messages']})

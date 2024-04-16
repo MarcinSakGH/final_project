@@ -4,7 +4,18 @@
 
 {% block content %}
 
-<h1>Chatbot</h1>
+<h1>AI Assistant</h1>
+    
+{#    <div class="info-box">#}
+{#        <h2>Welcome to our AI Assistant!</h2>#}
+{#        <p>You can ask the assistant for suggestions on new activities. For example, try asking "Suggest me some new hobbies to try out".</p>#}
+{#    </div>#}
+    
+    <form method="post">
+        {% csrf_token %}
+            <label for="clear">Press button to clear session:</label>
+        <button type="submit" name="clear">Clear session</button>
+    </form>
 
 <div>
     {% for message in messages %}
@@ -20,5 +31,7 @@
     <input id="message" type="text" name="message">
     <button type="submit">Send</button>
 </form>
+
+
 
 {% endblock content %}
