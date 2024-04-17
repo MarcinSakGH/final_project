@@ -306,6 +306,7 @@ class DayView(LoginRequiredMixin, View):
                 activities_info.append(activity_info)
 
             data_to_summarize = " ".join(activities_info)  # join all information in one string
+            # print(data_to_summarize)
             summary = generate_summary(data_to_summarize)
             request.session[summary_key] = summary
             ctx['summary'] = summary
