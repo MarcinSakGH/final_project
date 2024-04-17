@@ -10,7 +10,7 @@ def check_user_activity():
         if not user.activityevent_set.filter(activity_date=date.today()).exists():
             send_mail(
                 'Your Daily Activities',
-                'Hello {}!'.format(user.username) + " We've noticed thar haven\'t added any activities today. "
+                'Hello {}!'.format(user.username) + " We've noticed that you haven\'t added any activities today. "
                                                     "Remember to add them so stay on track!",
                 'marc.saczek@gmail.com',
                 [user.email],
