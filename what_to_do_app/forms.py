@@ -106,3 +106,6 @@ class UserActivityEmotionForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+class DaySelectionForm(forms.Form):
+    date = forms.DateField()

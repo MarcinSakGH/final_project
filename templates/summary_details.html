@@ -1,0 +1,23 @@
+{% extends 'base.html'%}
+
+{% block title %}Summmary Details{% endblock %}
+
+{% block content %}
+
+    <h1>Day Summary</h1>
+    <form method="get">
+        <label for="date">Date:</label>
+    <input type="date" name="date" id="date" value="{{ date_str }}" onchange="this.form.submit()">
+    </form>
+    <a href="?date={{ previous_day }}">Previous Day</a>
+    <a href="?date={{ next_day }}">Next day</a>
+
+    <hr>
+    {% if summary %}
+        <h2>{{ summary.date }}</h2>
+        <p>{{ summary.summary }}</p>
+    {% else %}
+    <p>Choose the date to see a summary.</p>
+    {% endif %}
+
+{% endblock content %}
