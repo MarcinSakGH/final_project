@@ -596,7 +596,7 @@ def chatbot_view(request):
 
 class SummaryDetailView(LoginRequiredMixin, View):
     def get(self, request):
-        date = request.GET.get('date')
+        date = request.GET.get('date', datetime.now().date())
         if date:
             if isinstance(date, str):
                 date = datetime.strptime(date, '%Y-%m-%d')
