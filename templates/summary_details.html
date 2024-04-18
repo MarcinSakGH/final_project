@@ -20,4 +20,6 @@
     <p>Choose the date to see a summary.</p>
     {% endif %}
 
+    <a href="{% url 'day-summary-pdf' summary.id %}">Generate PDF</a>
+
 {% endblock content %}

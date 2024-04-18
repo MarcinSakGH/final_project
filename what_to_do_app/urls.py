@@ -1,7 +1,8 @@
 from django.urls import path
 from .views import (SignUpView, CustomUserUpdateView, ActivityListView, ActivityCreateView, ActivityUpdateView,
                     ActivityDeleteView, add_activity, ActivityEventDeleteView, DayView, CustomLoginView,
-                    add_emotion_view, WeekView, ActivityEventUpdateView, chatbot_view, SummaryDetailView)
+                    add_emotion_view, WeekView, ActivityEventUpdateView, chatbot_view, SummaryDetailView,
+                    day_summary_pdf_view)
 from django.contrib.auth.views import LogoutView, LoginView
 
 
@@ -24,4 +25,5 @@ urlpatterns = [
     path('activity_event/edit/<int:pk>/', ActivityEventUpdateView.as_view(), name='activity_event_update'),
     path('chatbot/', chatbot_view, name='chatbot'),
     path('summary-detail', SummaryDetailView.as_view(), name='summary-detail'),
+    path('summary/<int:summary_id>/', day_summary_pdf_view, name='day-summary-pdf'),
 ]

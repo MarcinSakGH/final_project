@@ -1,5 +1,6 @@
 # Standard library imports
 from collections import defaultdict
+import re
 from datetime import datetime, date, timedelta
 
 # Django related imports
@@ -8,6 +9,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Prefetch
 from django.utils import timezone
 from django.contrib.auth import login
+from django.template.loader import get_template
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, TemplateView, UpdateView, View
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -16,6 +18,7 @@ from django.contrib.auth.views import LoginView
 # Third party imports
 from decouple import config
 from openai import OpenAI
+import pdfkit
 
 # Local application/library specific imports
 from .forms import (ActivityEventForm, ActivityForm, CustomUserChangeForm,
@@ -613,3 +616,16 @@ class SummaryDetailView(LoginRequiredMixin, View):
         ctx = {'summary': summary, 'next_day': next_day, 'previous_day': previous_day, 'form': form,
                'date_str': date_str}
         return render(request, 'summary_details.html', context=ctx)
+
+
+def day_summary_pdf_view(request, summary_id):
+    summary = get_object_or_404(DaySummary, id=summary_id)
+    html_template = get_template('summary_details.html')
+    render_html = html_template.render({'summary': summary})
+    # Remove DOCTYPE declaration from HTML
+    render_html = re.sub(r'<!DOCTYPE html>', '', render_html)
+    print(render_html)
+    pdf_file = pdfkit.from_string(render_html, False)
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename=day_summary.pdf'
+    return response
