@@ -17,9 +17,10 @@
         <h2>{{ summary.date }}</h2>
         <p>{{ summary.summary }}</p>
     {% else %}
-    <p>Choose the date to see a summary.</p>
+    <p>No day summary added for given date.</p>
     {% endif %}
-
-    <a href="{% url 'day-summary-pdf' summary.id %}">Generate PDF</a>
-
+    
+    {% if summary %}
+        <a href="{% url 'day-summary-pdf' summary.id %}" target="_blank">Generate PDF</a>
+    {% endif %}
 {% endblock content %}
