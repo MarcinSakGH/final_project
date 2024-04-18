@@ -667,8 +667,14 @@ class SummaryRangeView(LoginRequiredMixin, View):
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
 
-        # Przekierowanie do URL generującego PDF
         if start_date and end_date:
-            return HttpResponseRedirect(reverse('range-summary-pdf', args=(start_date, end_date)))
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
+            return render(request, 'summary_range_form.html', {
+                'summaries': summaries,
+                'start_date': start_date,
+                'end_date': end_date
+            })
         else:
             return render(request, 'summary_range_form.html', {'error': 'Please provide both start and end dates.'})

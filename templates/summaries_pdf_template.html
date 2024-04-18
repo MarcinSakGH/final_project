@@ -7,7 +7,7 @@
     <h1>Summary Report from {{ summaries.first.date }} to {{ summaries.last.date }}</h1>
     <ul>
     {% for summary in summaries %}
-        <li>{{ summary.date }} - {{ summary.summary }}</li>
+        <li><strong>{{ summary.date }}</strong>- {{ summary.summary }}</li>
     {% endfor %}
     </ul>
 </body>

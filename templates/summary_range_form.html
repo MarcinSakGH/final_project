@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -8,11 +9,21 @@
 <form method="post" action="{% url 'range-summary-view' %}">
     {% csrf_token %}
     <label for="start_date">Start Date:</label>
-    <input type="date" name="start_date" id="start_date" required>
+    <input type="date" name="start_date" id="start_date" value="{{ start_date|date:'Y-m-d' }}" required>
 
     <label for="end_date">End Date:</label>
-    <input type="date" name="end_date" id="end_date" required>
+    <input type="date" name="end_date" id="end_date" value="{{ end_date|date:'Y-m-d' }}" required>
 
-    <button type="submit">Generate PDF</button>
+    <button type="submit">Show Summaries</button>
 </form>
+
+{% if summaries %}
+    <h2>Summaries from {{ start_date|date:"Y-m-d" }} to {{ end_date|date:"Y-m-d" }}</h2>
+    <ul>
+    {% for summary in summaries %}
+        <li>{{ summary.date }}: {{ summary.summary }}</li>
+    {% endfor %}
+    </ul>
+    <a href="{% url 'range-summary-pdf' start_date|date:'Y-m-d' end_date|date:'Y-m-d' %}" target="_blank">Generate PDF</a>
+{% endif %}
 {% endblock %}
