@@ -629,3 +629,46 @@ def day_summary_pdf_view(request, summary_id):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename=day_summary.pdf'
     return response
+
+
+class RangeSummaryPDFView(LoginRequiredMixin, View):
+    def get(self, request, start_date, end_date):
+        # Konwersja stringów dat na obiekty datetime
+        try:
+            start_date = datetime.strptime(start_date, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return HttpResponse("Invalid date format, please use YYYY-MM-DD format.", status=400)
+
+        # Pobieranie podsumowań dla danego użytkownika i zakresu dat
+        summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
+        if not summaries.exists():
+            return HttpResponse("No summaries available for this date range.", status=404)
+
+        # Przygotowanie danych do szablonu PDF
+        html_template = get_template('summaries_pdf_template.html')
+        render_html = html_template.render({'summaries': summaries})
+        render_html = render_html.replace('<!DOCTYPE html>', '')  # Usunięcie DOCTYPE dla PDF
+
+        # Generowanie pliku PDF
+        pdf_file = pdfkit.from_string(render_html, False)
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="summary_{start_date.strftime("%Y-%m-%d")}_to_{end_date.strftime("%Y-%m-%d")}.pdf"'
+        return response
+
+
+class SummaryRangeView(LoginRequiredMixin, View):
+    def get(self, request):
+        # Tylko renderowanie strony z formularzem
+        return render(request, 'summary_range_form.html')
+
+    def post(self, request):
+        # Odbiór dat z formularza
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+
+        # Przekierowanie do URL generującego PDF
+        if start_date and end_date:
+            return HttpResponseRedirect(reverse('range-summary-pdf', args=(start_date, end_date)))
+        else:
+            return render(request, 'summary_range_form.html', {'error': 'Please provide both start and end dates.'})

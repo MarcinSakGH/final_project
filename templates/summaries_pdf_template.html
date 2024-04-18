@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Summary Report</title>
+</head>
+<body>
+    <h1>Summary Report from {{ summaries.first.date }} to {{ summaries.last.date }}</h1>
+    <ul>
+    {% for summary in summaries %}
+        <li>{{ summary.date }} - {{ summary.summary }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
