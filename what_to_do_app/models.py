@@ -1,8 +1,6 @@
-from django.db import models
-
-# Create your models here.
 
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models.signals import post_save, post_delete
@@ -127,6 +125,14 @@ class Notification(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
 
+
+class DaySummary(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    date = models.DateField()
+    summary = models.TextField()
+
+    class Meta:
+        unique_together = ('user', 'date')
 
 @receiver([post_save, post_delete], sender=UserActivityEmotion)
 def update_activity_score(sender, instance, **kwargs):

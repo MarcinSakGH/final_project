@@ -20,7 +20,7 @@ from openai import OpenAI
 # Local application/library specific imports
 from .forms import (ActivityEventForm, ActivityForm, CustomUserChangeForm,
                     CustomUserCreationForm, UserActivityEmotionForm)
-from .models import Activity, ActivityEvent, UserActivityEmotion
+from .models import Activity, ActivityEvent, UserActivityEmotion, DaySummary
 from .utils import generate_summary
 
 
@@ -307,9 +307,15 @@ class DayView(LoginRequiredMixin, View):
 
             data_to_summarize = " ".join(activities_info)  # join all information in one string
             # print(data_to_summarize)
+
+            # generate summary
             summary = generate_summary(data_to_summarize)
             request.session[summary_key] = summary
             ctx['summary'] = summary
+            #  update or create summary and save it to database
+            DaySummary.objects.update_or_create(
+                user=request.user, date=current_date, defaults={"summary": summary})
+
         elif summary_key in request.session:
             ctx['summary'] = request.session[summary_key]
 
