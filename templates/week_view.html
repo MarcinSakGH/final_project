@@ -39,7 +39,7 @@
                 {% for activity in activities %}
                     <li>{{ activity.activity }}</li>
                 {% empty %}
-                    <li>No activities scheduled for this day.</li>
+                    <li>No activities added for this day.</li>
                 {% endfor %}
             </ul>
             <a href="{% url 'day' date=date %}">Go to Day View</a>

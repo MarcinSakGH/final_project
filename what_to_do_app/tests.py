@@ -1,7 +1,9 @@
 import pytest
-from django.test import Client, TestCase
+from django.test import Client, TestCase, RequestFactory
 from django.urls import reverse
+from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
+from .views import DayView
 from .models import *
 
 # Create your tests here.
@@ -89,3 +91,22 @@ def test_CustomUserUpdateView(client):
     print(response.content)
     assert response.status_code == 302  # check if redirected after updating the data
     assert response.url == reverse('home')  # check if redirects to correct site
+
+class DayViewTestCase(TestCase):
+    def setUp(self):
+        self.day_view = DayView()
+
+    def test_day_status_today(self):
+        today = datetime.today().date()
+        status = self.day_view.day_status(today)
+        self.assertEqual(status, 'Today')
+
+    def test_day_status_tomorrow(self):
+        tomorrow = datetime.today().date() + timedelta(days=1)
+        status = self.day_view.day_status(tomorrow)
+        self.assertEqual(status, 'Tomorrow')
+
+    def test_day_status_yesterday(self):
+        yesterday = datetime.today().date() - timedelta(days=1)
+        status = self.day_view.day_status(yesterday)
+        self.assertEqual(status, 'Yesterday')

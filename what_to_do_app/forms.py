@@ -42,7 +42,7 @@ class ActivityEventForm(forms.ModelForm):
     activity_time = forms.TimeField(
         input_formats=['%H:%M'],
         widget=forms.widgets.TimeInput(attrs={'type': 'time', 'format': '%H:%M'}),
-        help_text='Format: 24-hour clock'
+
     )
     duration_hours = forms.IntegerField(min_value=0, required=False)
     duration_minutes = forms.ChoiceField(choices=[(i, f'{i} minutes') for i in range(0, 60, 15)], required=False)

@@ -512,7 +512,8 @@ class WeekView(TemplateView):
                 print('Incorrect date format, should be YYYY-MM-DD')
                 start_week = timezone.now().date()
 
-        end_week = start_week + timedelta(days=6)
+        start_week -= timedelta(days=start_week.weekday())
+        end_week = start_week + timedelta(days=7)
 
         context['start_week'] = start_week
         context['end_week'] = end_week
@@ -597,7 +598,20 @@ def chatbot_view(request):
 
     return render(request, 'chatbot.html', {'messages': request.session['messages']})
 
+
 class SummaryDetailView(LoginRequiredMixin, View):
+    """
+    SummaryDetailView class displays the summary details for a given date.
+
+    Attributes:
+        - LoginRequiredMixin: Mixin that requires the user to be logged in for accessing the view
+
+    Methods:
+        - get(self, request): Handles the HTTP GET request for the view. Retrieves the date parameter from the request
+            and retrieves the corresponding summary object from the database. It also initializes the form and calculates
+            the next and previous day dates. The method then renders the 'summary_details.html' template with the
+            retrieved data.
+    """
     def get(self, request):
         date = request.GET.get('date', datetime.now().date())
         if date:
@@ -619,6 +633,19 @@ class SummaryDetailView(LoginRequiredMixin, View):
 
 
 def day_summary_pdf_view(request, summary_id):
+    """
+    Generate a PDF file of a day summary.
+
+    Parameters:
+        - request (HttpRequest): The request object.
+        - summary_id (int): The ID of the day summary.
+
+    Returns:
+        HttpResponse: The PDF file as a response.
+
+    Raises:
+        Http404: If the day summary with the given ID does not exist.
+    """
     summary = get_object_or_404(DaySummary, id=summary_id)
     html_template = get_template('summary_details.html')
     render_html = html_template.render({'summary': summary})
@@ -632,6 +659,32 @@ def day_summary_pdf_view(request, summary_id):
 
 
 class RangeSummaryPDFView(LoginRequiredMixin, View):
+    """
+    Class: RangeSummaryPDFView
+
+    This class is responsible for generating a PDF summary report for a given date range.
+
+    Args:
+        LoginRequiredMixin: A mixin class that checks if the user is logged in.
+        View: A base view class that handles HTTP requests and responses.
+
+    Methods:
+        get(self, request, start_date, end_date):
+            This method handles the GET request and generates the PDF summary report.
+
+            Args:
+                request (HttpRequest): The HTTP request object.
+                start_date (str): The start date of the range in the format 'YYYY-MM-DD'.
+                end_date (str): The end date of the range in the format 'YYYY-MM-DD'.
+
+            Returns:
+                HttpResponse: The HTTP response containing the generated PDF summary report.
+
+            Raises:
+                HttpResponse: An error response if the start date is after the end date or if the date format is invalid.
+                HttpResponse: An empty response if no summaries are available for the date range.
+                HttpResponse: An error response if failed to generate the PDF.
+    """
     def get(self, request, start_date, end_date):
         try:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
@@ -659,13 +712,28 @@ class RangeSummaryPDFView(LoginRequiredMixin, View):
 
 
 class SummaryRangeView(LoginRequiredMixin, View):
+    """
+
+    SummaryRangeView class
+
+    A view class that handles the retrieval and filtering of summary data within a given date range.
+
+    Attributes:
+        None
+
+    Methods:
+        get(self, request)
+            Retrieves the start_date and end_date from the request parameters.
+            Processes the dates and filters the summary objects if valid dates are provided.
+            Renders the summary_range_form.html template with the retrieved data.
+
+    """
     def get(self, request):
-        # Odbiór dat z parametrów GET
+        # receiving the dates from get requests
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         summaries = []
 
-        # Przetwarzanie dat i filtrowanie podsumowań, jeśli daty zostały podane
         if start_date and end_date:
             try:
                 start_date = datetime.strptime(start_date, '%Y-%m-%d')
