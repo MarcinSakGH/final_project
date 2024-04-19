@@ -633,48 +633,56 @@ def day_summary_pdf_view(request, summary_id):
 
 class RangeSummaryPDFView(LoginRequiredMixin, View):
     def get(self, request, start_date, end_date):
-        # Konwersja stringów dat na obiekty datetime
         try:
             start_date = datetime.strptime(start_date, '%Y-%m-%d')
             end_date = datetime.strptime(end_date, '%Y-%m-%d')
+            if start_date > end_date:
+                return HttpResponse("Start date must be before end date.", status=400)
         except ValueError:
             return HttpResponse("Invalid date format, please use YYYY-MM-DD format.", status=400)
 
-        # Pobieranie podsumowań dla danego użytkownika i zakresu dat
         summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
         if not summaries.exists():
-            return HttpResponse("No summaries available for this date range.", status=404)
+            return HttpResponse("No summaries available for this date range. Please choose another range.", status=200)
 
-        # Przygotowanie danych do szablonu PDF
         html_template = get_template('summaries_pdf_template.html')
         render_html = html_template.render({'summaries': summaries})
         render_html = render_html.replace('<!DOCTYPE html>', '')  # Usunięcie DOCTYPE dla PDF
 
-        # Generowanie pliku PDF
-        pdf_file = pdfkit.from_string(render_html, False)
-        response = HttpResponse(pdf_file, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="summary_{start_date.strftime("%Y-%m-%d")}_to_{end_date.strftime("%Y-%m-%d")}.pdf"'
-        return response
+        try:
+            pdf_file = pdfkit.from_string(render_html, False)
+            response = HttpResponse(pdf_file, content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="summary_{start_date.strftime("%Y-%m-%d")}_to_{end_date.strftime("%Y-%m-%d")}.pdf"'
+            return response
+        except Exception as e:
+            return HttpResponse("Failed to generate PDF: " + str(e), status=500)
 
 
 class SummaryRangeView(LoginRequiredMixin, View):
     def get(self, request):
-        # Tylko renderowanie strony z formularzem
-        return render(request, 'summary_range_form.html')
+        # Odbiór dat z parametrów GET
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        summaries = []
 
-    def post(self, request):
-        # Odbiór dat z formularza
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-
+        # Przetwarzanie dat i filtrowanie podsumowań, jeśli daty zostały podane
         if start_date and end_date:
-            start_date = datetime.strptime(start_date, '%Y-%m-%d')
-            end_date = datetime.strptime(end_date, '%Y-%m-%d')
-            summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
-            return render(request, 'summary_range_form.html', {
-                'summaries': summaries,
-                'start_date': start_date,
-                'end_date': end_date
-            })
-        else:
-            return render(request, 'summary_range_form.html', {'error': 'Please provide both start and end dates.'})
+            try:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date, '%Y-%m-%d')
+                if start_date <= end_date:
+                    summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
+                else:
+                    return render(request, 'summary_range_form.html', {
+                        'error': 'Start date must be before end date.'
+                    })
+            except ValueError:
+                return render(request, 'summary_range_form.html', {
+                    'error': 'Invalid date format. Please use YYYY-MM-DD.'
+                })
+
+        return render(request, 'summary_range_form.html', {
+            'summaries': summaries,
+            'start_date': start_date,
+            'end_date': end_date
+        })
