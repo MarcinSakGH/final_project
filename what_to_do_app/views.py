@@ -69,6 +69,8 @@ class CustomLoginView(LoginView):
             If the form is invalid, increments the 'login_attempts' session variable and renders the invalid form.
 
     """
+    success_url = reverse_lazy('current_day')
+
     def get(self, request, *args, **kwargs):
         request.session['login_attempts'] = 0
         return super().get(request, *args, **kwargs)
@@ -76,7 +78,7 @@ class CustomLoginView(LoginView):
     def form_valid(self, form):
         """If form is valid redirect to the supplied URL"""
         login(self.request, form.get_user())
-        return HttpResponseRedirect(self.get_success_url())
+        return HttpResponseRedirect(self.success_url)
 
     def form_invalid(self, form):
         """If form is invalid, render the invalid form"""
