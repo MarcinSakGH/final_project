@@ -695,6 +695,7 @@ class RangeSummaryPDFView(LoginRequiredMixin, View):
             return HttpResponse("Invalid date format, please use YYYY-MM-DD format.", status=400)
 
         summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
+        print(str(summaries.query))
         if not summaries.exists():
             return HttpResponse("No summaries available for this date range. Please choose another range.", status=200)
 
