@@ -50,6 +50,9 @@ def test_activity_list_view(client):
     assert len(response.context['activities']) == 1
 
 class CustomLoginViewTest(TestCase):
+    username = ''
+    password = ''
+
     @classmethod
     def setUpTestData(cls):
         cls.username = 'test_user'
@@ -91,6 +94,9 @@ def test_CustomUserUpdateView(client):
     print(response.content)
     assert response.status_code == 302  # check if redirected after updating the data
     assert response.url == reverse('home')  # check if redirects to correct site
+
+
+
 
 class DayViewTestCase(TestCase):
     def setUp(self):

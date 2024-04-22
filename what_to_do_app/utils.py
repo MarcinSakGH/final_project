@@ -15,6 +15,8 @@ def generate_summary(input_text):
           When replying, you are addressing in personal form, directly to the user.
           Take the user's input including the activity's name, duration, description, 
           and emotions associated with it and generate a detailed summary.
+          If any negative emotions were experienced in relation to activity, suggest
+          what user may do better or how to improve.
           """
         },
         {"role": "user", "content": f"{input_text}"},

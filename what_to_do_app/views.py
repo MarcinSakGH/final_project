@@ -103,8 +103,6 @@ class CustomUserUpdateView(UpdateView):
     Methods:
         get_object(queryset=None): Returns the user object for the current request.
 
-    Example Usage:
-        view = CustomUserUpdateView.as_view()
     """
     form_class = CustomUserChangeForm
     template_name = 'user_update.html'
@@ -134,7 +132,7 @@ class ActivityListView(LoginRequiredMixin, ListView):
     context_object_name = 'activities'
 
     def get_queryset(self):
-        # Ogranicz zwracany queryset do aktywności bieżącego użytkownika
+        # Limit the returned queryset to the current user's activity
         return Activity.objects.filter(user=self.request.user)
 
     def get_context_data(self, **kwargs):
@@ -672,26 +670,6 @@ class RangeSummaryPDFView(LoginRequiredMixin, View):
 
     This class is responsible for generating a PDF summary report for a given date range.
 
-    Args:
-        LoginRequiredMixin: A mixin class that checks if the user is logged in.
-        View: A base view class that handles HTTP requests and responses.
-
-    Methods:
-        get(self, request, start_date, end_date):
-            This method handles the GET request and generates the PDF summary report.
-
-            Args:
-                request (HttpRequest): The HTTP request object.
-                start_date (str): The start date of the range in the format 'YYYY-MM-DD'.
-                end_date (str): The end date of the range in the format 'YYYY-MM-DD'.
-
-            Returns:
-                HttpResponse: The HTTP response containing the generated PDF summary report.
-
-            Raises:
-                HttpResponse: An error response if the start date is after the end date or if the date format is invalid.
-                HttpResponse: An empty response if no summaries are available for the date range.
-                HttpResponse: An error response if failed to generate the PDF.
     """
     def get(self, request, start_date, end_date):
         try:
