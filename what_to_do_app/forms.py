@@ -72,6 +72,8 @@ class ActivityEventForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
 def get_emotion_choices():
     categories = EmotionCategory.objects.all().prefetch_related(
         Prefetch(

@@ -255,8 +255,10 @@ class DayView(LoginRequiredMixin, View):
             current_date = datetime.strptime(date, '%Y-%m-%d').date()
         else:
             current_date = datetime.now().date()
+        #  create instances of 2 forms
         activity_event_form = ActivityEventForm(user=request.user)
         user_activity_emotion_form = UserActivityEmotionForm(prefix='uae')
+
         previous_day = current_date - timedelta(days=1)
         next_day = current_date + timedelta(days=1)
         # print(self.request.user, self.request.user.id)
