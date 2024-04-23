@@ -114,6 +114,33 @@ def test_activities_view_not_authenticated_user():
     print(response.content)
     assert response.status_code == 302  # check if unauthorized users are redirected
 
+
+@pytest.mark.django_db
+def test_activity_update_view(client):
+    # create test user and activity
+    test_user = CustomUser.objects.create_user(username='test_user', password='test_password')
+    activity = Activity.objects.create(user=test_user, name='Activity 1')
+
+    # login user
+    client.login(username='test_user', password='test_password')
+
+    url = reverse('activity_update', kwargs={'pk': activity.pk})
+    response = client.get(url)
+
+    # check the status code of the response and if the correct template is used
+    assert response.status_code == 200
+    assert 'activity_form.html' in response.templates[0].name
+
+    response = client.post(url, {'user': test_user.pk, 'name': 'Updated Activity'})  # update the activity
+
+    # check if redirected after successful form submission
+    assert response.status_code == 302
+    assert response.url == reverse('activity_list')
+
+    # check if activity data was updated correctly
+    activity.refresh_from_db()
+    assert activity.name == 'Updated Activity'
+
 class DayViewTestCase(TestCase):
     def setUp(self):
         self.day_view = DayView()
