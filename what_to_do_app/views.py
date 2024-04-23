@@ -263,13 +263,25 @@ class DayView(LoginRequiredMixin, View):
         next_day = current_date + timedelta(days=1)
         # print(self.request.user, self.request.user.id)
 
+        # Use Prefetch for optimizing database queries.
+        # 'useractivityemotion_set' refers to UserActivityEmotion objects related to our ActivityEvent model.
+        # Apply a filter on these related objects to account for the currently logged-in user.
+        # When Django later needs to retrieve these related objects,
+        # it won't have to make a separate database query for each ActivityEvent object.
+        # Instead, it can retrieve all the needed UserActivityEmotion objects in a single batch.
         user_activity_emotion_prefetch = Prefetch('useractivityemotion_set',
                                                   queryset=UserActivityEmotion.objects.filter(
                                                       user=self.request.user))
+
+        # Query the database for all ActivityEvent objects for the currently logged-in user and for current date
+        # Utilize previously defined Prefetch object (user_activity_emotion_prefetch) with prefetch_related method
+        # to retrieve related UserActivityEmotion objects for these ActivityEvent objects
+        # Sort results in descending order by activity_date
         activities = ActivityEvent.objects.filter(
             user=self.request.user,
             activity_date=current_date
         ).prefetch_related(user_activity_emotion_prefetch).order_by('-activity_date')
+
         current_day_of_week = current_date.strftime("%A")
         current_day_status = self.day_status(current_date)
         ctx = {
@@ -284,6 +296,8 @@ class DayView(LoginRequiredMixin, View):
         }
 
         summary_key = f'summary_{current_date}'
+
+        # if user clicks Generate Summary button
         if 'request_summary' in request.GET:
             activities_info = []
             for activity in activities:
@@ -319,7 +333,7 @@ class DayView(LoginRequiredMixin, View):
             data_to_summarize = " ".join(activities_info)  # join all information in one string
             # print(data_to_summarize)
 
-            # generate summary
+            # generate summary with generate_summary method defined in utils.py
             summary = generate_summary(data_to_summarize)
             request.session[summary_key] = summary
             ctx['summary'] = summary
@@ -337,8 +351,10 @@ class DayView(LoginRequiredMixin, View):
             current_date = datetime.strptime(date, '%Y-%m-%d').date()
         else:
             current_date = datetime.now().date()
+
         activity_event_form = ActivityEventForm(request.POST, user=request.user)
         if activity_event_form.is_valid():
+            # get cleaned duration hours and minutes from form data
             duration_hours = activity_event_form.cleaned_data.get('duration_hours', 0)
             duration_minutes = int(activity_event_form.cleaned_data.get('duration_minutes', 0))
 
@@ -362,7 +378,6 @@ class DayView(LoginRequiredMixin, View):
                 user_activity_emotion.save()
 
             return redirect('day', date=current_date.strftime("%Y-%m-%d"))
-
 
 def add_activity(request):
     """

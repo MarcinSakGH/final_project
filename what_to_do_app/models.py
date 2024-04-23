@@ -122,11 +122,11 @@ class UserActivityEmotion(models.Model):
     def __str__(self):
         return f'{self.user} - {self.emotion.name}'
 
-class Notification(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    content = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-    read = models.BooleanField(default=False)
+# class Notification(models.Model):
+#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+#     content = models.TextField()
+#     timestamp = models.DateTimeField(auto_now_add=True)
+#     read = models.BooleanField(default=False)
 
 
 class DaySummary(models.Model):

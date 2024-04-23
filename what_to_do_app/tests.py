@@ -2,6 +2,7 @@ import pytest
 from django.test import Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from datetime import datetime
 from .views import DayView
 from .models import *
 
@@ -59,17 +60,25 @@ def client_with_login(test_user):
     client.login(username='test_user', password='test_password')
     return client
 
-def test_login_success(client, test_user):
+def test_login_success(client_with_login, test_user):
     login_url = reverse('login')
     success_url = reverse('current_day')
     data = {'username': 'test_user', 'password': 'test_password'}
 
-    response = client.post(login_url, data=data, follow=True)
+    response = client_with_login.post(login_url, data=data, follow=True)
 
     assert response.status_code == 200
     assert response.resolver_match.url_name == 'current_day'
 
+def test_login_failure(client, test_user):
+    login_url = reverse('login')
+    #  use incorrect data for login
+    data = {'username': 'test_user', 'password': 'wrong_password'}
 
+    response = client.post(login_url, data=data, follow=True)
+    # after failed login attempt we should remain on login page
+    assert response.status_code == 200
+    assert response.resolver_match.url_name == 'login'
 
 
 @pytest.mark.django_db
@@ -136,5 +145,28 @@ def test_activity_update_view(client):
     # check if activity data was updated correctly
     activity.refresh_from_db()
     assert activity.name == 'Updated Activity'
+
+
+@pytest.mark.django_db
+class TestDayView:
+    # define setup method that will run on start of every test
+    # create instance of test client and test user
+    def setup_method(self):
+        self.client = Client()
+        self.user = CustomUser.objects.create_user(username='test_user', password='test_password')
+        self.client.login(username='test_user', password='test_password')
+
+    def test_get_method_without_date(self):
+        # test get method without date parameter
+        url = reverse('current_day')
+        response = self.client.get(url)
+        assert response.status_code == 200
+
+    def test_get_method_with_date(self):
+        # test 'get' method with date parameter
+        date_str = datetime.now().strftime('%Y-%m-%d')
+        url = reverse('day', kwargs={'date': date_str})
+        response = self.client.get(url, {'date': date_str})
+        assert response.status_code == 200
 
 
