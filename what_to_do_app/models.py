@@ -60,6 +60,9 @@ class Activity(models.Model):
         for event in activity_events:
             total_activity_score += event.activity_score
 
+        if activity_events.count() > 0:
+            total_activity_score /= activity_events.count()
+
         return total_activity_score
 
     def __str__(self):

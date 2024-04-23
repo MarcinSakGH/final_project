@@ -96,7 +96,23 @@ def test_CustomUserUpdateView(client):
     assert response.url == reverse('home')  # check if redirects to correct site
 
 
+@pytest.mark.django_db
+def test_activities_view_authenticated_user():
+    client = Client()
+    CustomUser.objects.create_user(username='test_user', password='test_password')
+    client.login(username='test_user', password='test_password')
+    response = client.get(reverse('activity_list'))
+    print(response.content)
+    assert response.status_code == 200
+    assert 'activities' in response.context  # check if 'activities' available in context of response
 
+
+@pytest.mark.django_db
+def test_activities_view_not_authenticated_user():
+    client = Client()
+    response = client.get(reverse('activity_list'))
+    print(response.content)
+    assert response.status_code == 302  # check if unauthorized users are redirected
 
 class DayViewTestCase(TestCase):
     def setUp(self):
