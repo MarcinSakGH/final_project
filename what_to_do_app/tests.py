@@ -280,3 +280,58 @@ def test_day_summary_pdf_view():
     # make sure that pDF file was successfully created
     assert b'%PDF' in response.content
 
+
+@pytest.fixture
+def summaries(test_user):
+    start_date = datetime.strptime('2022-01-01', '%Y-%m-%d')
+    end_date = datetime.strptime('2022-01-10', '%Y-%m-%d')
+
+    # Create some DaySummary objects for the 'test_user'
+    start_summary = DaySummary.objects.create(user=test_user, date=start_date,
+                                              summary='This is a test summary for start date.')
+    end_summary = DaySummary.objects.create(user=test_user, date=end_date,
+                                            summary='This is a test summary for end date')
+
+    return [start_summary, end_summary]
+
+
+def test_summary_range_view_with_valid_dates(db, client_with_login, summaries):
+    # Make the request with the 'client_with_login'
+    response = client_with_login.get('/summaries/', {'start_date': '2022-01-01', 'end_date': '2022-01-10'},
+                                     follow=True)
+    assert response.status_code == 200
+    assert response.context['summaries'].count() == 2
+
+
+def test_summary_range_view_with_no_summaries(db, client_with_login, test_user):
+    # Make the request with the 'client_with_login' for a different date range
+    response = client_with_login.get('/summaries/', {'start_date': '2022-02-01', 'end_date': '2022-02-28'},
+                                     follow=True)
+    assert response.status_code == 200
+    assert 'message' in response.context
+    assert response.context['message'] == 'No summaries found fo given date range.'
+    assert response.context['summaries'].count() == 0
+
+
+@pytest.mark.django_db
+class TestRangeSummaryPDFView:
+    def test_invalid_date_format(self, client_with_login):
+        # test if view returns 400 for invalid date format
+        response = client_with_login.get(
+            reverse('range-summary-pdf', kwargs={'start_date': '2021-13-01', 'end_date': '2021-12-31'}))
+        assert response.status_code == 400
+        assert "Invalid date format" in str(response.content)
+
+    def test_start_date_after_end_date(self, client_with_login):
+        # test if view returns 400 when start date is later that end date
+        response = client_with_login.get(
+            reverse('range-summary-pdf', kwargs={'start_date': '2022-01-01', 'end_date': '2021-01-01'}))
+        assert response.status_code == 400
+        assert "Start date must be before end date" in str(response.content)
+
+    def test_no_summaries_available(self, client_with_login):
+        # test if view returns a message when no summaries available for the provided date range
+        response = client_with_login.get(
+            reverse('range-summary-pdf', kwargs={'start_date': '2020-01-01', 'end_date': '2020-01-31'}))
+        assert response.status_code == 200
+        assert "No summaries available for this date range" in str(response.content)

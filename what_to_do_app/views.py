@@ -301,7 +301,7 @@ class DayView(LoginRequiredMixin, View):
         if 'request_summary' in request.GET:
             activities_info = []
             for activity in activities:
-                # for every activity get description, duration, comments and associated emotions
+                # for every activity event get description, duration, comments and associated emotions
                 descriptions = activity.activity.description
                 durations = str(activity.duration)
                 comments = activity.comment
@@ -331,7 +331,7 @@ class DayView(LoginRequiredMixin, View):
                 activities_info.append(activity_info)
 
             data_to_summarize = " ".join(activities_info)  # join all information in one string
-            # print(data_to_summarize)
+            print(data_to_summarize)
 
             # generate summary with generate_summary method defined in utils.py
             summary = generate_summary(data_to_summarize)
@@ -753,7 +753,7 @@ class RangeSummaryPDFView(LoginRequiredMixin, View):
             return HttpResponse("Invalid date format, please use YYYY-MM-DD format.", status=400)
 
         summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
-        print(str(summaries.query))
+
         if not summaries.exists():
             return HttpResponse("No summaries available for this date range. Please choose another range.", status=200)
 
@@ -764,8 +764,10 @@ class RangeSummaryPDFView(LoginRequiredMixin, View):
         try:
             pdf_file = pdfkit.from_string(render_html, False)
             response = HttpResponse(pdf_file, content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="summary_{start_date.strftime("%Y-%m-%d")}_to_{end_date.strftime("%Y-%m-%d")}.pdf"'
+            response['Content-Disposition'] = (f'attachment; filename="summary_{start_date.strftime("%Y-%m-%d")}_'
+                                               f'to_{end_date.strftime("%Y-%m-%d")}.pdf"')
             return response
         except Exception as e:
             return HttpResponse("Failed to generate PDF: " + str(e), status=500)
+
 
