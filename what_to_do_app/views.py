@@ -394,9 +394,12 @@ def add_activity(request):
     if request.method == 'POST':
         form = ActivityForm(request.POST)
         if form.is_valid():
-            # save activity to database
-            activity = form.save()
-            return redirect('current_day', day=activity.date)
+            # save activity to database without commit yet
+            activity = form.save(commit=False)
+            # assign currently authenticated user
+            activity.user = request.user
+            activity.save()
+            return redirect(reverse('current_day'))
     else:
         form = ActivityForm(initial={'date': date.today()})
     return render(request, 'activity_form.html', {'form': form})

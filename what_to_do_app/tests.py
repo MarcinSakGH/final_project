@@ -1,7 +1,7 @@
 import pytest
 from django.test import Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from datetime import datetime
 from .views import DayView
 from .models import *
@@ -169,4 +169,22 @@ class TestDayView:
         response = self.client.get(url, {'date': date_str})
         assert response.status_code == 200
 
+
+@pytest.mark.django_db
+def test_add_activity_post():
+    client = Client()
+
+    # create new user and login
+    user = CustomUser.objects.create_user(username='test_user', password='12345')
+    client.login(username='test_user', password='12345')
+
+    # create form data and invoke POST method with form data
+    form_data = {'name': 'Test Activity', 'description': 'This is a test activity'}
+    response = client.post(reverse('add_activity'), data=form_data)
+
+    # check if form is sent correctly und user is redirected
+    assert response.status_code == 302
+
+    # check if activity added correctly to database
+    assert Activity.objects.filter(name='Test Activity').exists()
 
