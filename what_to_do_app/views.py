@@ -139,7 +139,7 @@ class ActivityListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         activities_with_score = []
         for activity in context['activities']:
-            total_score = activity.calculate_total_activity_score()
+            total_score = round(activity.calculate_total_activity_score(), 2)
             activities_with_score.append(
                 {
                     'activity': activity,
@@ -396,7 +396,7 @@ def add_activity(request):
         if form.is_valid():
             # save activity to database without commit yet
             activity = form.save(commit=False)
-            # assign currently authenticated user
+            # assign currently authenticated user to activity
             activity.user = request.user
             activity.save()
             return redirect(reverse('current_day'))
@@ -447,13 +447,18 @@ class ActivityEventUpdateView(LoginRequiredMixin, UpdateView):
     def get_initial(self):
         initial = super().get_initial()
 
-        # Get the current duration
+        # Get the current duration and activity_time
         duration = self.object.duration
+        activity_time = self.object.activity_time
 
         if duration:
             # Convert duration into hours and minutes
             initial['duration_hours'], rem = divmod(duration.seconds, 3600)
             initial['duration_minutes'] = rem // 60
+
+        if activity_time:
+            print(activity_time)
+            initial['activity_time'] = activity_time
 
         return initial
 
@@ -707,7 +712,7 @@ class RangeSummaryPDFView(LoginRequiredMixin, View):
 
         html_template = get_template('summaries_pdf_template.html')
         render_html = html_template.render({'summaries': summaries})
-        render_html = render_html.replace('<!DOCTYPE html>', '')  # Usunięcie DOCTYPE dla PDF
+        render_html = render_html.replace('<!DOCTYPE html>', '')  # remove DOCTYPE dla PDF
 
         try:
             pdf_file = pdfkit.from_string(render_html, False)

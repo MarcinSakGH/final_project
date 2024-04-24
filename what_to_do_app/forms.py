@@ -41,7 +41,7 @@ class ActivityEventForm(forms.ModelForm):
         initial=datetime.today().strftime('%Y-%m-%d')
     )
     activity_time = forms.TimeField(
-        input_formats=['%H:%M'],
+        input_formats=['%H:%M',  '%H:%M:%S'],
         widget=forms.widgets.TimeInput(attrs={'type': 'time', 'format': '%H:%M'}),
 
     )

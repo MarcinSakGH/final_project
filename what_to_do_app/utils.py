@@ -2,7 +2,6 @@ from openai import OpenAI
 from decouple import config
 
 
-
 def generate_summary(input_text):
     client = OpenAI(api_key=config('OPENAI_KEY'))
 
