@@ -687,6 +687,55 @@ def day_summary_pdf_view(request, summary_id):
     return response
 
 
+class SummaryRangeView(LoginRequiredMixin, View):
+    """
+
+    SummaryRangeView class
+
+    A view class that handles the retrieval and filtering of summary data within a given date range.
+
+    Attributes:
+        None
+
+    Methods:
+        get(self, request)
+            Retrieves the start_date and end_date from the request parameters.
+            Processes the dates and filters the summary objects if valid dates are provided.
+            Renders the summary_range_form.html template with the retrieved data.
+
+    """
+    def get(self, request):
+        # receiving the dates from get requests
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+        summaries = []
+        message = ''
+
+        if start_date and end_date:
+            try:
+                start_date = datetime.strptime(start_date, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date, '%Y-%m-%d')
+                if start_date <= end_date:
+                    summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
+
+                    if not summaries.exists():
+                        message = 'No summaries found fo given date range.'
+                else:
+                    return render(request, 'summary_range_form.html', {
+                        'error': 'Start date must be before end date.'
+                    })
+            except ValueError:
+                return render(request, 'summary_range_form.html', {
+                    'error': 'Invalid date format. Please use YYYY-MM-DD.'
+                })
+
+        return render(request, 'summary_range_form.html', {
+            'summaries': summaries,
+            'start_date': start_date,
+            'end_date': end_date,
+            'message': message,
+        })
+
 class RangeSummaryPDFView(LoginRequiredMixin, View):
     """
     Class: RangeSummaryPDFView
@@ -720,47 +769,3 @@ class RangeSummaryPDFView(LoginRequiredMixin, View):
         except Exception as e:
             return HttpResponse("Failed to generate PDF: " + str(e), status=500)
 
-
-class SummaryRangeView(LoginRequiredMixin, View):
-    """
-
-    SummaryRangeView class
-
-    A view class that handles the retrieval and filtering of summary data within a given date range.
-
-    Attributes:
-        None
-
-    Methods:
-        get(self, request)
-            Retrieves the start_date and end_date from the request parameters.
-            Processes the dates and filters the summary objects if valid dates are provided.
-            Renders the summary_range_form.html template with the retrieved data.
-
-    """
-    def get(self, request):
-        # receiving the dates from get requests
-        start_date = request.GET.get('start_date')
-        end_date = request.GET.get('end_date')
-        summaries = []
-
-        if start_date and end_date:
-            try:
-                start_date = datetime.strptime(start_date, '%Y-%m-%d')
-                end_date = datetime.strptime(end_date, '%Y-%m-%d')
-                if start_date <= end_date:
-                    summaries = DaySummary.objects.filter(user=request.user, date__range=(start_date, end_date))
-                else:
-                    return render(request, 'summary_range_form.html', {
-                        'error': 'Start date must be before end date.'
-                    })
-            except ValueError:
-                return render(request, 'summary_range_form.html', {
-                    'error': 'Invalid date format. Please use YYYY-MM-DD.'
-                })
-
-        return render(request, 'summary_range_form.html', {
-            'summaries': summaries,
-            'start_date': start_date,
-            'end_date': end_date
-        })
