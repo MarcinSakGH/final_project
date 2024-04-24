@@ -1,9 +1,10 @@
 import pytest
-from django.test import Client
+from django.test import Client, RequestFactory
 from django.urls import reverse
 from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth.models import AnonymousUser
 from datetime import datetime
-from .views import DayView
+from .views import DayView, WeekView
 from .models import *
 
 # Create your tests here.
@@ -188,3 +189,41 @@ def test_add_activity_post():
     # check if activity added correctly to database
     assert Activity.objects.filter(name='Test Activity').exists()
 
+# fixtures and test for
+@pytest.fixture
+def user(db):
+    return CustomUser.objects.create_user(username='user1', password='pass')
+
+
+@pytest.fixture
+def activity(db, user):
+    return Activity.objects.create(user=user, name='Test Activity')
+
+
+@pytest.fixture
+def activity_event(db, user, activity):
+    return ActivityEvent.objects.create(activity=activity, user=user, activity_date='2023-01-01')
+
+
+@pytest.fixture
+def view(db, user):
+    # create GET request to /week_view/
+    factory = RequestFactory()
+    request = factory.get('/week_view/')
+    # set user of request for test user
+    request.user = user
+    # create object WeekView and set its request and kwargs
+    view = WeekView()
+    view.request = request
+    view.kwargs = {'date': '2023-01-01'}
+    return view
+
+
+def test_get_context_data(db, view, user, activity, activity_event):
+    context = view.get_context_data(date='2023-01-01')
+    # test if context has correct keys and if their values are not None
+    assert context['start_week'] is not None
+    assert context['end_week'] is not None
+    assert context['week_dates_with_activities'] is not None
+    assert context['prev_week'] is not None
+    assert context['next_week'] is not None
