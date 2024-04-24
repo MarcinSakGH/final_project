@@ -254,3 +254,29 @@ def test_summary_detail_view():
 
     # Check if the correct template was used
     assert 'summary_details.html' in [template.name for template in response.templates]
+
+
+@pytest.mark.django_db
+def test_day_summary_pdf_view():
+    # create test user and summary
+    test_user = CustomUser.objects.create_user(username='test_user', password='test_pass')
+    test_day_summary = DaySummary.objects.create(user=test_user, date='2024-04-04', summary='This is a test summary.')
+
+    client = Client()
+
+    logged_in = client.login(username='test_user', password='test_pass')
+    assert logged_in is True
+
+    #  generate URL for view and pass ID of created  test_day_summary object and send GET request
+    url = reverse('day-summary-pdf', kwargs={'summary_id': test_day_summary.id})
+    response = client.get(url)
+
+    # check if response is correct
+    assert response.status_code == 200
+
+    # check if response content type is PDF
+    assert response['content-type'] == 'application/pdf'
+
+    # make sure that pDF file was successfully created
+    assert b'%PDF' in response.content
+

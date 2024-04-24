@@ -677,12 +677,13 @@ def day_summary_pdf_view(request, summary_id):
     summary = get_object_or_404(DaySummary, id=summary_id)
     html_template = get_template('summary_details.html')
     render_html = html_template.render({'summary': summary})
-    # Remove DOCTYPE declaration from HTML
-    render_html = re.sub(r'<!DOCTYPE html>', '', render_html)
+    render_html = re.sub(r'<!DOCTYPE html>', '', render_html)  # Remove DOCTYPE declaration from HTML
     print(render_html)
+    #  convert rendered html to pdf with pdfkit
     pdf_file = pdfkit.from_string(render_html, False)
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename=day_summary.pdf'
+    # return response with generated pdf to browser
     return response
 
 
