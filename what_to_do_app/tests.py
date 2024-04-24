@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.models import AnonymousUser
 from datetime import datetime
-from .views import DayView, WeekView
+from .views import DayView, WeekView, SummaryDetailView
 from .models import *
 
 # Create your tests here.
@@ -227,3 +227,30 @@ def test_get_context_data(db, view, user, activity, activity_event):
     assert context['week_dates_with_activities'] is not None
     assert context['prev_week'] is not None
     assert context['next_week'] is not None
+
+
+
+
+@pytest.mark.django_db
+def test_summary_detail_view():
+    # Create test user and log in
+    test_user = CustomUser.objects.create_user(username='testuser', password='12345')
+    client = Client()
+    client.login(username='testuser', password='12345')
+
+    # Create a day summary for the user
+    date = datetime.now().date()
+    test_summary = "This is a test summary."
+    DaySummary.objects.create(user=test_user, date=date, summary=test_summary)
+
+    # Get the response from the server
+    response = client.get('/summary-detail', {'date': date})
+
+    # Check the status code
+    assert response.status_code == 200
+
+    # Check the content
+    assert test_summary in str(response.content)
+
+    # Check if the correct template was used
+    assert 'summary_details.html' in [template.name for template in response.templates]
