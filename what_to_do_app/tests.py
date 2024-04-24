@@ -189,7 +189,7 @@ def test_add_activity_post():
     # check if activity added correctly to database
     assert Activity.objects.filter(name='Test Activity').exists()
 
-# fixtures and test for
+# fixtures and test for week_view
 @pytest.fixture
 def user(db):
     return CustomUser.objects.create_user(username='user1', password='pass')

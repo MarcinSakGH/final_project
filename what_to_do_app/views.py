@@ -645,18 +645,15 @@ class SummaryDetailView(LoginRequiredMixin, View):
     """
     def get(self, request):
         date = request.GET.get('date', datetime.now().date())
-        if date:
-            if isinstance(date, str):
-                date = datetime.strptime(date, '%Y-%m-%d')
-            #  get summaries for given date
-            summary = DaySummary.objects.filter(user=request.user, date=date).first()
-            form = DaySelectionForm(initial={'date': date})
-            next_day = (date + timedelta(days=1)).strftime('%Y-%m-%d')
-            previous_day = (date - timedelta(days=1)).strftime('%Y-%m-%d')
-            date_str = date.strftime('%Y-%m-%d')
-        else:
-            form = DaySelectionForm()
-            summary, next_day, previous_day, date_str = None, None, None, ''
+
+        if isinstance(date, str):
+            date = datetime.strptime(date, '%Y-%m-%d')
+        #  get summaries for given date
+        summary = DaySummary.objects.filter(user=request.user, date=date).first()
+        form = DaySelectionForm(initial={'date': date})
+        next_day = (date + timedelta(days=1)).strftime('%Y-%m-%d')
+        previous_day = (date - timedelta(days=1)).strftime('%Y-%m-%d')
+        date_str = date.strftime('%Y-%m-%d')
 
         ctx = {'summary': summary, 'next_day': next_day, 'previous_day': previous_day, 'form': form,
                'date_str': date_str}
