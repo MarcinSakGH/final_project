@@ -592,10 +592,11 @@ def chatbot_view(request):
     and that the 'chatbot.html' template exists.
 
     """
+    # Obtain the OpenAI api key and create an instance of OpenAI
     api_key = config('OPENAI_KEY')
     openai = OpenAI(api_key=api_key)
 
-
+    # If the session does not contain any messages or there's a 'clear' in the POST request, initialize the chat.
     if 'messages' not in request.session or 'clear' in request.POST:
         system_msg = 'What type of assistant would you like me to be:\n'
         request.session['messages'] = [{'role': 'system', 'content': system_msg}]
